@@ -1730,34 +1730,95 @@ Final check before answering: JSON syntax must be valid; no duplicate copies of 
     return {obj,removed};
   }
 
+  function normalizeDateValue(v){
+    if(v===null||v===undefined||v==='')return null;
+    let x=String(v).trim();
+    if(!x || /^(BLANK|UNCLEAR|NULL|NONE)$/i.test(x))return null;
+    x=x.replace(/[.\/]/g,'-').replace(/\s+/g,'');
+    const m=x.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if(!m)return x;
+    return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+  }
+  function normalizeRoomValue(v){
+    if(v===null||v===undefined)return '';
+    const m=String(v).match(/(?:^|\D)(101|102|201|202|203|204|205|301|302|303|304|305|401)(?:호)?(?:\D|$)/);
+    return m?m[1]:String(v).trim();
+  }
+  function normalizeImportReservation(raw){
+    const r={...raw};
+    r.room=normalizeRoomValue(r.room ?? r.ROOM ?? r.room_number ?? r.roomNumber);
+    r.guest_name=r.guest_name ?? r.guest ?? r.name ?? r.GUEST_NAME ?? null;
+    r.room_type=r.room_type ?? r.ROOM_TYPE ?? ROOM_TYPE[r.room] ?? null;
+    r.nationality=r.nationality ?? r.NATIONALITY ?? null;
+    r.source=r.source ?? r.booking_source ?? r.BOOKING_SOURCE ?? null;
+    r.handler=r.handler ?? r.booking_handler ?? r.BOOKING_HANDLER ?? null;
+    r.booking_date=normalizeDateValue(r.booking_date ?? r.BOOKING_DATE);
+    r.guest_count=(r.guest_count ?? r.GUEST_COUNT ?? r.people ?? null);
+    if(r.guest_count!==null&&r.guest_count!==undefined)r.guest_count=String(r.guest_count);
+    r.check_in=normalizeDateValue(r.check_in ?? r.checkin ?? r.CHECK_IN);
+    r.check_out=normalizeDateValue(r.check_out ?? r.checkout ?? r.CHECK_OUT);
+    r.phone=r.phone ?? r.PHONE ?? null;
+    r.extra_guest=r.extra_guest ?? r.EXTRA_GUEST ?? null;
+    r.extra_bedding=r.extra_bedding ?? r.EXTRA_BEDDING ?? null;
+    r.parking=r.parking ?? r.PARKING ?? null;
+    r.breakfast_included=r.breakfast_included ?? r.BREAKFAST_INCLUDED ?? null;
+    r.breakfast_time=r.breakfast_time ?? r.BREAKFAST_TIME ?? null;
+    r.breakfast_menu=r.breakfast_menu ?? r.BREAKFAST_MENU ?? null;
+    r.breakfast_count=r.breakfast_count ?? r.BREAKFAST_COUNT ?? null;
+    r.note=r.note ?? r.special_note ?? r.SPECIAL_NOTE ?? null;
+    r.reported_nights=r.reported_nights ?? r.REPORTED_NIGHTS ?? null;
+    return r;
+  }
+  function prepareImport(obj){
+    const result={...obj};
+    const ready=[];
+    const unresolved=[];
+    const rawRows=Array.isArray(obj?.reservations)?obj.reservations:[];
+    rawRows.forEach(raw=>{
+      const r=normalizeImportReservation(raw);
+      if(isInstructionPlaceholder(r.room)||isInstructionPlaceholder(r.guest_name))return;
+      if(!ROOM_TYPE[r.room]){unresolved.push({...r,_issue:`허용되지 않은 객실번호: ${r.room||'없음'}`});return;}
+      if(!r.check_in||!r.check_out){unresolved.push({...r,_issue:'체크인 또는 체크아웃 날짜가 없음'});return;}
+      ready.push(r);
+    });
+    result.reservations=ready;
+    result._unresolved_reservations=unresolved;
+    result.blocks=Array.isArray(obj?.blocks)?obj.blocks.filter(Boolean).map(b=>({...b,room:normalizeRoomValue(b.room ?? b.ROOM),date:normalizeDateValue(b.date ?? b.DATE)||null})).filter(b=>ROOM_TYPE[b.room]):[];
+    return result;
+  }
   function validateImport(obj){
     const errors=[];
     if(!obj||typeof obj!=='object')errors.push('JSON 객체가 아닙니다.');
-    const rs=Array.isArray(obj?.reservations)?obj.reservations:[];
-    rs.forEach((r,i)=>{
-      if(!ROOM_TYPE[r.room])errors.push(`${i+1}번째 예약: 객실 ${r.room}은 허용 객실이 아닙니다.`);
-      if(!r.check_in||!r.check_out)errors.push(`${r.room||i+1}: 체크인/체크아웃 날짜가 필요합니다.`);
-    });
+    if(!Array.isArray(obj?.reservations))errors.push('reservations 배열이 없습니다.');
     return errors;
   }
-  function previewImport(){
+  function previewImport(silent=false){
     try{
-      let obj=JSON.parse(cleanJsonText($('#jsonInput').value));
-      const sanitized=sanitizeImportObject(obj);
-      obj=sanitized.obj;
+      const rawText=$('#jsonInput').value.trim();
+      if(!rawText){pendingImport=null;$('#applyImport').disabled=true;$('#preview').classList.remove('show');updateWorkflowState();return false;}
+      let obj=JSON.parse(cleanJsonText(rawText));
       const selectedSheetDate=$('#sheetDate').value||selectedDate;
       const returnedSheetDate=obj.sheet_date||null;
-      if(returnedSheetDate && returnedSheetDate!==selectedSheetDate){
-        obj._returned_sheet_date=returnedSheetDate;
-      }
+      if(returnedSheetDate && returnedSheetDate!==selectedSheetDate)obj._returned_sheet_date=returnedSheetDate;
       obj.sheet_date=selectedSheetDate;
+      obj=prepareImport(obj);
       const errors=validateImport(obj);if(errors.length)throw new Error(errors.join('\n'));
       pendingImport=obj;
-      const rs=obj.reservations||[], bs=obj.blocks||[];
-      $('#previewHead').textContent=`예약 ${rs.length}건 · 메모/블럭 ${bs.length}건 · 기준일 ${obj.sheet_date}` + (sanitized.removed?` · 잘못 생성된 예시행 ${sanitized.removed}건 자동 제외`:``) + (obj._returned_sheet_date?` · JSON의 잘못된 기준일 ${obj._returned_sheet_date} → ${obj.sheet_date}로 자동 수정`:``);
-      $('#previewList').innerHTML=rs.map(r=>`<div class="preview-item"><div class="p-room">${esc(r.room)}</div><div><b>${esc(r.guest_name||'예약자 미입력')}</b><div class="p-date">${esc(r.check_in)} → ${esc(r.check_out)} · ${esc(r.source||'채널 미입력')}</div></div><div>${esc(r.guest_count||'-')}명</div></div>`).join('')+bs.map(b=>`<div class="preview-item"><div class="p-room">${esc(b.room)}</div><div><b>${esc(b.label||'메모')}</b><div class="p-date">${esc(b.date||obj.sheet_date||'')}</div></div><div>BLOCK</div></div>`).join('');
-      $('#preview').classList.add('show');$('#applyImport').disabled=false;updateWorkflowState();
-    }catch(e){pendingImport=null;$('#applyImport').disabled=true;$('#preview').classList.remove('show');updateWorkflowState();alert('JSON을 확인해주세요.\n\n'+e.message)}
+      const rs=obj.reservations||[], bad=obj._unresolved_reservations||[], bs=obj.blocks||[];
+      $('#previewHead').textContent=`달력 반영 가능 ${rs.length}건 · 확인 필요 ${bad.length}건 · 메모/블럭 ${bs.length}건 · 기준일 ${obj.sheet_date}`+(obj._returned_sheet_date?` · JSON 기준일 ${obj._returned_sheet_date} → ${obj.sheet_date} 자동 보정`:``);
+      const goodHtml=rs.map(r=>`<div class="preview-item"><div class="p-room">${esc(r.room)}</div><div><b>${esc(r.guest_name||'예약자 미입력')}</b><div class="p-date">${esc(r.check_in)} → ${esc(r.check_out)} · ${esc(r.source||'채널 미입력')}</div></div><div>${esc(r.guest_count||'-')}명</div></div>`).join('');
+      const badHtml=bad.map(r=>`<div class="preview-item" style="background:#fff5f2"><div class="p-room">${esc(r.room||'?')}</div><div><b>${esc(r.guest_name||'예약자 미입력')}</b><div class="p-date" style="color:#b4533c">⚠ ${esc(r._issue)} · ${esc(r.check_in||'-')} → ${esc(r.check_out||'-')}</div></div><div>확인</div></div>`).join('');
+      const blockHtml=bs.map(b=>`<div class="preview-item"><div class="p-room">${esc(b.room)}</div><div><b>${esc(b.label||'메모')}</b><div class="p-date">${esc(b.date||obj.sheet_date||'')}</div></div><div>BLOCK</div></div>`).join('');
+      $('#previewList').innerHTML=goodHtml+badHtml+blockHtml || '<div style="padding:16px;color:#9b8f89">읽을 수 있는 예약이 없습니다. JSON 내용을 확인해주세요.</div>';
+      $('#preview').classList.add('show');
+      $('#applyImport').disabled=(rs.length===0 && bs.length===0);
+      updateWorkflowState();
+      return true;
+    }catch(e){
+      pendingImport=null;$('#applyImport').disabled=true;$('#preview').classList.remove('show');updateWorkflowState();
+      if(!silent)alert('JSON을 확인해주세요.\n\n'+e.message);
+      return false;
+    }
   }
   function applyImport(){
     if(!pendingImport)return;
@@ -1847,7 +1908,15 @@ Final check before answering: JSON syntax must be valid; no duplicate copies of 
   $('#copyPrompt').onclick=async()=>{const text=$('#promptEditor').value||buildPrompt();try{await navigator.clipboard.writeText(text);toast('이미지와 함께 사용할 영문 프롬프트를 복사했습니다.')}catch(e){const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();toast('영문 프롬프트를 복사했습니다.')}};
   $('#saveAnalysisResult').onclick=saveAnalysisResultForDate;
   $('#analysisResult').addEventListener('input',()=>{refreshJsonCommand();pendingImport=null;$('#preview').classList.remove('show');$('#applyImport').disabled=true;updateWorkflowState()});
-  $('#jsonInput').addEventListener('input',()=>{pendingImport=null;$('#preview').classList.remove('show');$('#applyImport').disabled=true;updateWorkflowState()});
+  let jsonAutoTimer=null;
+  $('#jsonInput').addEventListener('input',()=>{
+    pendingImport=null;$('#applyImport').disabled=true;updateWorkflowState();
+    clearTimeout(jsonAutoTimer);
+    const v=$('#jsonInput').value.trim();
+    if(!v){$('#preview').classList.remove('show');return;}
+    jsonAutoTimer=setTimeout(()=>previewImport(true),350);
+  });
+  $('#jsonInput').addEventListener('paste',()=>{clearTimeout(jsonAutoTimer);jsonAutoTimer=setTimeout(()=>previewImport(true),80);});
   $('#copyJsonCommand').onclick=async()=>{const text=buildJsonCommand();$('#jsonCommandEditor').value=text;try{await navigator.clipboard.writeText(text);toast('JSON 변환 명령을 복사했습니다.')}catch(e){const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();toast('JSON 변환 명령을 복사했습니다.')}};
   $('#previewBtn').onclick=previewImport;$('#applyImport').onclick=applyImport;
   $('[data-close="importModal"]').onclick=()=>$('#importModal').classList.remove('open');
