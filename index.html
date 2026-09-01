@@ -471,6 +471,70 @@
   .reservation-savebar{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin-top:15px;padding-top:13px;border-top:1px solid #eee4df}.reservation-source-note{font-size:9px;color:#9a8d88;line-height:1.45}
   @media(max-width:760px){.guest-roster-row{grid-template-columns:58px minmax(0,1fr)}.guest-roster-breakfast,.guest-roster-edit{justify-self:start}.reservation-form{grid-template-columns:1fr}.reservation-field.full{grid-column:auto}}
 
+
+  .danger-zone{background:#fff8f7;border:1px solid #f1d8d4;border-radius:18px;padding:14px;margin-top:12px}
+  .danger-zone-title{font-size:13px;font-weight:900;color:#8f5652;margin-bottom:5px}
+  .danger-zone-text{font-size:10.5px;line-height:1.55;color:#987b77}
+  .purge-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .purge-field label{display:block;font-size:10.5px;font-weight:850;color:#796b67;margin-bottom:6px}
+  .purge-field input{width:100%;border:1px solid #eadfda;background:#fffdfb;border-radius:14px;padding:11px 12px;color:#625754;outline:none}
+  .purge-field input:focus{border-color:#d8bdc5;box-shadow:0 0 0 4px rgba(211,190,199,.13)}
+  .purge-check{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:11px;color:#746763;font-weight:700}
+  .purge-check input{width:16px;height:16px}
+  .hard-delete-record{background:#fff0ee!important;color:#a2443e!important;border-color:#efcbc6!important;font-weight:900!important}
+  .hard-delete-record:hover{background:#fde6e3!important}
+  @media(max-width:680px){.purge-form{grid-template-columns:1fr}}
+
+
+  /* ===== 조식 리딩연습 · 메인화면 인라인 LIST ===== */
+  .breakfast-inline{margin-top:24px;padding:0 2px 28px;background:transparent}
+  .breakfast-inline-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 12px}
+  .breakfast-inline-title{display:flex;align-items:center;gap:10px;min-width:0}
+  .breakfast-inline-title .egg{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#fff2d9;font-size:19px;box-shadow:inset 0 0 0 1px #f0dcc0}
+  .breakfast-inline-title h2{margin:0;font-size:18px;letter-spacing:-.04em;color:#574e4b;font-weight:900}
+  .breakfast-inline-title p{margin:3px 0 0;font-size:10px;color:#9a8d88;line-height:1.5}
+  .breakfast-inline-tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+  .breakfast-inline-date{display:inline-flex;align-items:center;gap:7px;border:1px solid #eadfd9;background:#fffaf7;border-radius:999px;padding:7px 10px;color:#7e716d;font-size:10px;font-weight:850}
+  .breakfast-inline-date input{border:0;background:transparent;color:#625754;font:inherit;outline:none;width:124px}
+  .breakfast-table-wrap{overflow:auto;background:#fffdfb;border:1px solid #e8ddd6;border-radius:18px;box-shadow:0 8px 24px rgba(92,75,67,.045)}
+  .breakfast-inline table{width:100%;min-width:1320px;border-collapse:collapse;table-layout:fixed;background:#fffdfb}
+  .breakfast-inline th,.breakfast-inline td{border-right:1px solid #eee4de;border-bottom:1px solid #eee4de;padding:5px 4px;text-align:center;height:45px;vertical-align:middle}
+  .breakfast-inline th:last-child,.breakfast-inline td:last-child{border-right:0}
+  .breakfast-inline tbody tr:last-child td{border-bottom:1px solid #eee4de}
+  .breakfast-inline th{position:sticky;top:0;z-index:2;background:#faf5f1;color:#776a66;font-size:10px;font-weight:900;white-space:nowrap}
+  .breakfast-inline th.menu-head{background:#f6f1ed}
+  .breakfast-inline td{font-size:11px;color:#615855;background:#fffdfb}
+  .breakfast-inline tr.has-guest td{background:#fffdfa}
+  .breakfast-inline tr.is-stay td{background:#f4eff8}
+  .breakfast-inline tr.is-complete td{background:#f1f6ee}
+  .breakfast-inline tr.focus-row td{background:#fff8ec!important}
+  .breakfast-inline input,.breakfast-inline select{width:100%;min-width:0;border:1px solid transparent;background:transparent;border-radius:9px;padding:6px 4px;text-align:center;color:#5d5451;font:inherit;outline:none}
+  .breakfast-inline input:focus,.breakfast-inline select:focus{background:#fff;border-color:#dccbc3;box-shadow:0 0 0 3px rgba(220,203,195,.16)}
+  .breakfast-inline .bf-name{text-align:left;font-weight:800;padding-left:7px}
+  .breakfast-inline .bf-room{font-size:12px;font-weight:950;color:#574d4b;white-space:nowrap}
+  .breakfast-inline .bf-room small{display:block;color:#a39590;font-size:8px;font-weight:750;margin-top:2px}
+  .breakfast-inline .bf-pax{font-weight:900}
+  .breakfast-inline .bf-qty{font-weight:900}
+  .breakfast-inline .bf-child-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+  .breakfast-inline .bf-child-mini label{display:grid;gap:1px;font-size:7px;color:#9b8d88;font-weight:800}
+  .breakfast-inline .bf-child-mini input{padding:4px 1px;font-size:10px;background:#fffaf7;border-color:#eee2db}
+  .breakfast-inline .bf-total{font-size:14px;font-weight:950;color:#574d4b;background:#f8f1e9!important}
+  .breakfast-inline .bf-complete-btn{border:0;border-radius:999px;padding:7px 10px;background:#f3ece8;color:#877a76;font-size:9px;font-weight:900;white-space:nowrap;cursor:pointer}
+  .breakfast-inline .bf-complete-btn.done{background:#dfead9;color:#5f7559}
+  .breakfast-inline tfoot td{background:#f5f0ec!important;font-weight:900;color:#6c605c}
+  .breakfast-inline tfoot .sumcell{background:#e7eef4!important;color:#586f7b}
+  .breakfast-inline tfoot .grand{background:#f1e5c9!important;color:#806943;font-size:14px}
+  .breakfast-inline-notes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .breakfast-note{min-width:0}
+  .breakfast-note label{display:block;margin:0 0 5px;font-size:10px;font-weight:900;color:#796c68}
+  .breakfast-note.front label{color:#8d754d}.breakfast-note.kitchen label{color:#916567}
+  .breakfast-note textarea{width:100%;min-height:72px;resize:vertical;border:1px solid #eadfd9;background:#fffdfb;border-radius:14px;padding:10px 11px;font:inherit;font-size:10.5px;line-height:1.5;color:#625754;outline:none}
+  .breakfast-note textarea:focus{border-color:#d8bdc5;box-shadow:0 0 0 4px rgba(211,190,199,.12)}
+  .breakfast-inline-savebar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .breakfast-inline-state{font-size:9.5px;color:#9b8d88}
+  .breakfast-inline-hint{font-size:9px;color:#aaa09c;margin-top:7px;line-height:1.45}
+  @media(max-width:760px){.breakfast-inline-notes{grid-template-columns:1fr}.breakfast-inline-head{align-items:flex-start}.breakfast-inline-title h2{font-size:16px}}
+
 </style>
 </head>
 <body>
@@ -486,7 +550,8 @@
     <div class="actions">
       <button class="btn soft" id="openImport">✦ 예약시트 가져오기</button>
       <button class="btn" id="exportBtn">JSON 백업</button>
-      <button class="btn danger-soft" id="resetBtn">전체 초기화</button>
+      <button class="btn danger-soft" id="openPurge">날짜 일정 완전삭제</button>
+      <button class="btn danger-soft" id="wipeAllBtn">전체 완전삭제</button>
     </div>
   </div>
 
@@ -527,22 +592,53 @@
 
   <section class="timeline" id="timeline"></section>
 
-  <div class="lower">
-    <section class="panel">
-      <div class="panel-head">
-        <div><div class="panel-title" id="roomPanelTitle">선택일 객실판</div><div class="panel-sub">색만 봐도 오늘의 체크인 · 연박 · 체크아웃 · 공실을 알 수 있어요</div></div>
-        <button class="btn small" id="jumpSelected">선택한 날짜 보기</button>
+  <section class="breakfast-inline" id="breakfastInline">
+    <div class="breakfast-inline-head">
+      <div class="breakfast-inline-title">
+        <span class="egg">🍳</span>
+        <div>
+          <h2 id="breakfastInlineTitle">조식 LIST</h2>
+          <p>조식 리딩연습의 객실별 입력표만 가져왔어요. 달력 날짜를 바꾸면 해당 날짜 표가 따로 저장됩니다.</p>
+        </div>
       </div>
-      <div class="room-grid" id="roomGrid"></div>
-    </section>
-    <section class="panel">
-      <div class="panel-head"><div><div class="panel-title">이번 달 예약 채널</div><div class="panel-sub" id="sourceSub">이번 달 예약을 가볍게 요약했어요</div></div></div>
-      <div class="source-list" id="sourceList"></div>
-      <div class="legend">
-        <span>IN · OUT은 고객색으로 연결</span><span>OUT / IN · 한 네모 안 두 줄</span><span>연박 · 고객별 컬러바</span><span>흰칸 · 공실</span><span>💧 · 자쿠지</span>
+      <div class="breakfast-inline-tools">
+        <label class="breakfast-inline-date"><span>조식 날짜</span><input type="date" id="breakfastInlineDate" value="2026-09-01"></label>
+        <button class="btn small" type="button" id="fillBreakfastFromRooms">객실예약 다시 불러오기</button>
+        <button class="btn soft small" type="button" id="saveBreakfastInline">이 날짜 조식표 저장</button>
       </div>
-    </section>
-  </div>
+    </div>
+    <div class="breakfast-table-wrap">
+      <table id="breakfastInlineTable">
+        <colgroup>
+          <col style="width:42px"><col style="width:76px"><col style="width:72px"><col style="width:142px">
+          <col style="width:150px"><col style="width:90px"><col style="width:108px"><col style="width:84px">
+          <col style="width:72px"><col style="width:72px"><col style="width:210px"><col style="width:72px">
+          <col style="width:58px"><col style="width:78px">
+        </colgroup>
+        <thead><tr>
+          <th>순번</th><th>호실</th><th>자리</th><th>연박 / 룸터치 / 딜리</th><th>이름</th><th>인원</th><th>결제</th><th>시간</th>
+          <th class="menu-head">톳밥</th><th class="menu-head">죽</th><th class="menu-head">어린이용</th><th class="menu-head">스프</th><th>총</th><th>완성</th>
+        </tr></thead>
+        <tbody id="breakfastInlineRows"></tbody>
+        <tfoot><tr>
+          <td colspan="8" style="text-align:right;padding-right:12px">총계</td>
+          <td class="sumcell"><small>톳밥</small><br><b id="bfSumTot">0</b></td>
+          <td class="sumcell"><small>죽</small><br><b id="bfSumPorridge">0</b></td>
+          <td class="sumcell"><small>어린이용</small><br><b id="bfSumChild">0</b></td>
+          <td class="sumcell"><small>스프</small><br><b id="bfSumSoup">0</b></td>
+          <td class="grand" id="bfGrandTotal">0</td><td></td>
+        </tr></tfoot>
+      </table>
+    </div>
+    <div class="breakfast-inline-notes">
+      <div class="breakfast-note front"><label>&lt;프런트&gt;</label><textarea id="bfFrontNote" placeholder="프런트 전달사항"></textarea></div>
+      <div class="breakfast-note kitchen"><label>&lt;주방&gt;</label><textarea id="bfKitchenNote" placeholder="주방 전달사항"></textarea></div>
+    </div>
+    <div class="breakfast-inline-savebar">
+      <div><div class="breakfast-inline-state" id="breakfastInlineState">아직 수정하지 않음</div><div class="breakfast-inline-hint">체크아웃 당일 아침 조식도 포함되도록, 해당 날짜 아침에 실제 투숙 중인 객실을 기준으로 예약자명과 인원을 불러옵니다.</div></div>
+      <button class="btn soft" type="button" id="saveBreakfastInlineBottom">조식표 저장</button>
+    </div>
+  </section>
 </div>
 
 <div class="modal-backdrop" id="importModal">
@@ -591,7 +687,7 @@
       <div class="record-panel">
         <div class="record-panel-head"><div><div class="record-panel-title">날짜별 저장 기록</div><div class="record-panel-sub">8월31일 / 9월1일 / 9월2일처럼 날짜별로 완전히 따로 보관됩니다.</div></div><span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn small record-btn" id="refreshHistory">새로고침</button><button class="btn small danger-soft" id="clearAllSheetRecords">모든 시트 기록 삭제</button></span></div>
         <div class="sheet-history" id="sheetHistory"></div>
-        <div class="action-note danger">날짜 옆의 <b>이 날짜 데이터 삭제</b>는 그 날짜로 저장한 프롬프트·해석·JSON 기록과 <b>그 저장 작업으로 달력에 반영된 예약/메모</b>까지 함께 지웁니다. 잘못 넣은 날을 말끔히 비운 뒤 다시 넣을 때 사용하세요.</div>
+        <div class="action-note danger"><b>반영 되돌리기</b>는 그 날짜 작업만 취소해 이전 상태를 살립니다. <b>완전삭제</b>는 이전 상태를 살리지 않고 해당 시트의 예약바까지 실제로 지웁니다. 정말 말끔히 비우고 다시 넣을 때는 완전삭제를 사용하세요.</div>
       </div>
     </div>
   </div>
@@ -680,6 +776,25 @@
   </div>
 </div>
 
+
+<div class="modal-backdrop" id="purgeModal">
+  <div class="modal" style="width:min(620px,100%)">
+    <div class="modal-head"><div><div class="modal-title">날짜 일정 완전삭제</div><div class="panel-sub">잘못 입력한 날짜를 달력에서 완전히 비운 뒤 다시 넣을 때 사용합니다.</div></div><button class="close" data-close="purgeModal">×</button></div>
+    <div class="modal-body">
+      <div class="danger-zone">
+        <div class="danger-zone-title">이 기능은 ‘되돌리기’가 아니라 실제 삭제입니다.</div>
+        <div class="danger-zone-text">선택한 날짜 범위에 걸쳐 보이는 객실 예약은 예약 전체가 달력에서 삭제됩니다. 예를 들어 9/1~9/3 숙박이 9/2에 걸쳐 있으면 그 예약 바 전체가 삭제됩니다. 해당 날짜의 일일 시트 저장 기록과 메모/블럭도 함께 삭제됩니다.</div>
+      </div>
+      <div class="purge-form">
+        <div class="purge-field"><label>삭제 시작일</label><input type="date" id="purgeStart"></div>
+        <div class="purge-field"><label>삭제 종료일</label><input type="date" id="purgeEnd"></div>
+      </div>
+      <label class="purge-check"><input type="checkbox" id="purgeLunch"> 이 날짜 범위의 중식 예약도 함께 삭제</label>
+      <div class="modal-actions"><button class="btn" data-close="purgeModal" type="button">취소</button><button class="btn danger-soft" id="runPurge" type="button">선택 날짜 일정 완전삭제</button></div>
+    </div>
+  </div>
+</div>
+
 <div id="roomTooltip" role="tooltip"></div>
 
 <div class="toast" id="toast"></div>
@@ -748,6 +863,7 @@
     if(!data.dailySheetRecords || typeof data.dailySheetRecords!=='object')data.dailySheetRecords={};
     if(!Array.isArray(data.lunchReservations))data.lunchReservations=[];
     if(!data.reservationEdits || typeof data.reservationEdits!=='object')data.reservationEdits={};
+    if(!data.breakfastReadings || typeof data.breakfastReadings!=='object')data.breakfastReadings={};
     return data;
   }
   function save(){localStorage.setItem(STORAGE_KEY, JSON.stringify(store))}
@@ -806,7 +922,7 @@
 
   function render(){
     $('#monthTitle').textContent=monthName(current.year,current.month);
-    renderMetrics(); renderCalendar(); renderRoomGrid(); renderSources(); renderTimeline();
+    renderMetrics(); renderCalendar(); renderBreakfastInline(); renderTimeline();
   }
 
   function renderMetrics(){
@@ -1042,6 +1158,122 @@
     })
   }
 
+
+  const BREAKFAST_SEATS=['','1','2','3','4','5','6','R1','R2','R3','R4','R5'];
+  const BREAKFAST_STATUS=['','연박','룸터치','딜리','연박/룸터치','연박/딜리'];
+  const BREAKFAST_PAYMENT=['','패키지','서비스','현장결제'];
+  const BREAKFAST_TIMES=['','8시','8시30분','9시'];
+  function clampBreakfastQty(v){const n=parseInt(v,10);return Number.isFinite(n)?Math.max(0,Math.min(30,n)):0}
+  function emptyBreakfastRow(room){return {room:String(room),seat:'',status:'',name:'',people:'',payment:'',time:'',tot:0,porridge:0,childPorridge:0,childRice:0,childSoup:0,soup:0,completed:false}}
+  function breakfastReservationFor(date,room){
+    // 'date' 아침 조식 기준: 전날까지 체크인했고, 당일 체크아웃 고객도 포함.
+    return store.reservations
+      .filter(r=>String(r.room)===String(room) && r.check_in && r.check_out && r.check_in<date && r.check_out>=date)
+      .sort((a,b)=>b.check_in.localeCompare(a.check_in))[0] || null;
+  }
+  function breakfastStatusFromReservation(r,date){
+    if(!r)return '';
+    return r.check_in<date && r.check_out>date ? '연박' : '';
+  }
+  function ensureBreakfastReading(date,forceRefresh=false){
+    if(!store.breakfastReadings)store.breakfastReadings={};
+    let rec=store.breakfastReadings[date];
+    if(!rec || typeof rec!=='object')rec={date,rows:{},frontNote:'',kitchenNote:'',saved_at:''};
+    if(!rec.rows || typeof rec.rows!=='object')rec.rows={};
+    ROOMS.forEach(meta=>{
+      const r=breakfastReservationFor(date,meta.room);
+      const prev=rec.rows[meta.room] || emptyBreakfastRow(meta.room);
+      const shouldAuto=forceRefresh || !rec.rows[meta.room];
+      const next={...emptyBreakfastRow(meta.room),...prev,room:meta.room};
+      if(r && shouldAuto){
+        next.name=r.guest_name||'';
+        next.people=r.breakfast_count||r.guest_count||'';
+        next.status=breakfastStatusFromReservation(r,date);
+        if(r.breakfast_time) next.time=String(r.breakfast_time).replace('08:00','8시').replace('08:30','8시30분').replace('09:00','9시');
+        if(r.breakfast_included===false && !next.payment) next.payment='';
+        if(r.breakfast_included===true && !next.payment) next.payment='패키지';
+      } else if(!r && shouldAuto){
+        const keepManual=['seat','payment','time','tot','porridge','childPorridge','childRice','childSoup','soup','completed'];
+        const clean=emptyBreakfastRow(meta.room);keepManual.forEach(k=>clean[k]=prev[k]??clean[k]);
+        rec.rows[meta.room]=clean;return;
+      }
+      rec.rows[meta.room]=next;
+    });
+    store.breakfastReadings[date]=rec;
+    return rec;
+  }
+  function breakfastOptions(list,value){return list.map(x=>`<option value="${esc(x)}" ${String(value??'')===String(x)?'selected':''}>${esc(x||'선택')}</option>`).join('')}
+  function breakfastRowTotal(r){return clampBreakfastQty(r.tot)+clampBreakfastQty(r.porridge)+clampBreakfastQty(r.childPorridge)+clampBreakfastQty(r.childRice)+clampBreakfastQty(r.childSoup)+clampBreakfastQty(r.soup)}
+  function renderBreakfastInline(){
+    const tbody=$('#breakfastInlineRows'); if(!tbody)return;
+    const date=selectedDate;
+    $('#breakfastInlineDate').value=date;
+    $('#breakfastInlineTitle').textContent=`${formatKoreanDate(date)} · 조식 LIST`;
+    const rec=ensureBreakfastReading(date,false);
+    tbody.innerHTML=ROOMS.map((meta,i)=>{
+      const r=rec.rows[meta.room]||emptyBreakfastRow(meta.room);
+      const has=!!String(r.name||'').trim();
+      const cls=[has?'has-guest':'',String(r.status||'').includes('연박')?'is-stay':'',r.completed?'is-complete':''].filter(Boolean).join(' ');
+      return `<tr data-bf-room="${meta.room}" class="${cls}">
+        <td>${i+1}</td>
+        <td class="bf-room">${meta.room}${meta.jacuzzi?'<small>💧 자쿠지</small>':''}</td>
+        <td><select data-bf-field="seat">${breakfastOptions(BREAKFAST_SEATS,r.seat)}</select></td>
+        <td><select data-bf-field="status">${breakfastOptions(BREAKFAST_STATUS,r.status)}</select></td>
+        <td><input class="bf-name" data-bf-field="name" value="${esc(r.name||'')}" placeholder="예약자"></td>
+        <td><input class="bf-pax" data-bf-field="people" value="${esc(r.people||'')}" placeholder="2+1"></td>
+        <td><select data-bf-field="payment">${breakfastOptions(BREAKFAST_PAYMENT,r.payment)}</select></td>
+        <td><select data-bf-field="time">${breakfastOptions(BREAKFAST_TIMES,r.time)}</select></td>
+        <td><input class="bf-qty" type="number" min="0" max="30" data-bf-field="tot" value="${clampBreakfastQty(r.tot)}"></td>
+        <td><input class="bf-qty" type="number" min="0" max="30" data-bf-field="porridge" value="${clampBreakfastQty(r.porridge)}"></td>
+        <td><div class="bf-child-mini">
+          <label>어죽<input type="number" min="0" max="30" data-bf-field="childPorridge" value="${clampBreakfastQty(r.childPorridge)}"></label>
+          <label>어밥<input type="number" min="0" max="30" data-bf-field="childRice" value="${clampBreakfastQty(r.childRice)}"></label>
+          <label>어미<input type="number" min="0" max="30" data-bf-field="childSoup" value="${clampBreakfastQty(r.childSoup)}"></label>
+        </div></td>
+        <td><input class="bf-qty" type="number" min="0" max="30" data-bf-field="soup" value="${clampBreakfastQty(r.soup)}"></td>
+        <td class="bf-total" data-bf-total>${breakfastRowTotal(r)}</td>
+        <td><button type="button" class="bf-complete-btn${r.completed?' done':''}" data-bf-complete>${r.completed?'완성 ✓':'완성'}</button></td>
+      </tr>`;
+    }).join('');
+    $('#bfFrontNote').value=rec.frontNote||'';$('#bfKitchenNote').value=rec.kitchenNote||'';
+    updateBreakfastInlineTotals();
+    $('#breakfastInlineState').textContent=rec.saved_at?`${formatKoreanDate(date)} · ${rec.saved_at} 저장`:`${formatKoreanDate(date)} · 자동저장 중`;
+  }
+  function collectBreakfastInline(saveNow=false){
+    const date=$('#breakfastInlineDate')?.value||selectedDate;
+    const rec=ensureBreakfastReading(date,false);
+    $$('#breakfastInlineRows tr[data-bf-room]').forEach(tr=>{
+      const room=tr.dataset.bfRoom;const row=rec.rows[room]||emptyBreakfastRow(room);
+      tr.querySelectorAll('[data-bf-field]').forEach(el=>{
+        const k=el.dataset.bfField;row[k]=['tot','porridge','childPorridge','childRice','childSoup','soup'].includes(k)?clampBreakfastQty(el.value):el.value;
+      });
+      row.completed=tr.querySelector('[data-bf-complete]')?.classList.contains('done')||false;
+      rec.rows[room]=row;
+    });
+    rec.frontNote=$('#bfFrontNote')?.value||'';rec.kitchenNote=$('#bfKitchenNote')?.value||'';
+    if(saveNow)rec.saved_at=nowStamp();
+    store.breakfastReadings[date]=rec;save();
+    return rec;
+  }
+  function updateBreakfastInlineTotals(){
+    let tot=0,por=0,child=0,soup=0;
+    $$('#breakfastInlineRows tr[data-bf-room]').forEach(tr=>{
+      const val=k=>clampBreakfastQty(tr.querySelector(`[data-bf-field="${k}"]`)?.value);
+      const rowTotal=val('tot')+val('porridge')+val('childPorridge')+val('childRice')+val('childSoup')+val('soup');
+      const cell=tr.querySelector('[data-bf-total]');if(cell)cell.textContent=rowTotal;
+      tot+=val('tot');por+=val('porridge');child+=val('childPorridge')+val('childRice')+val('childSoup');soup+=val('soup');
+    });
+    if($('#bfSumTot'))$('#bfSumTot').textContent=tot;if($('#bfSumPorridge'))$('#bfSumPorridge').textContent=por;if($('#bfSumChild'))$('#bfSumChild').textContent=child;if($('#bfSumSoup'))$('#bfSumSoup').textContent=soup;if($('#bfGrandTotal'))$('#bfGrandTotal').textContent=tot+por+child+soup;
+  }
+  function saveBreakfastInline(){
+    const rec=collectBreakfastInline(true);$('#breakfastInlineState').textContent=`${formatKoreanDate(rec.date)} · ${rec.saved_at} 저장`;toast('조식 LIST를 날짜별로 저장했습니다.');
+  }
+  function refreshBreakfastFromRooms(){
+    const date=$('#breakfastInlineDate')?.value||selectedDate;
+    if(!confirm(`${formatKoreanDate(date)}의 예약자명·인원을 객실 예약정보에서 다시 불러올까요?\n\n메뉴 수량·자리·결제·시간·완성 표시는 유지합니다.`))return;
+    ensureBreakfastReading(date,true);save();renderBreakfastInline();toast('객실 예약정보를 다시 불러왔습니다.');
+  }
+
   function renderSources(){
     const monthStart=iso(current.year,current.month,1), monthEnd=iso(current.year,current.month+1,1);
     const rel=store.reservations.filter(r=>r.check_in<monthEnd && r.check_out>monthStart);
@@ -1156,7 +1388,7 @@
       const rCount=rec.parsed?.reservations?.length ?? (rec.reservation_count??0); const bCount=rec.parsed?.blocks?.length ?? (rec.block_count??0);
       const time=rec.applied_at||rec.analysis_saved_at||rec.prompt_saved_at||p?.saved_at||'';
       const state=rec.parsed?`예약 ${rCount}건 · 메모/블럭 ${bCount}건 · 캘린더 반영됨`:(rec.analysis_text?`이미지 해석 결과 저장됨 · JSON 미반영`:`영문 해석 프롬프트 저장됨`);
-      return `<div class="history-item"><div class="history-date">${esc(recordLabel(date))}<small>${esc(time)}</small></div><div class="history-meta">${esc(state)}</div><div class="history-actions"><button data-record-date="${esc(date)}" class="load-record">보기</button><button data-record-date="${esc(date)}" class="edit-record">수정</button><button data-record-date="${esc(date)}" class="delete-record">이 날짜 데이터 삭제</button></div></div>`;
+      return `<div class="history-item"><div class="history-date">${esc(recordLabel(date))}<small>${esc(time)}</small></div><div class="history-meta">${esc(state)}</div><div class="history-actions"><button data-record-date="${esc(date)}" class="load-record">보기</button><button data-record-date="${esc(date)}" class="edit-record">수정</button><button data-record-date="${esc(date)}" class="delete-record">반영 되돌리기</button><button data-record-date="${esc(date)}" class="hard-delete-record">완전삭제</button></div></div>`;
     }).join('');
   }
   function openSavedRecord(date,editable=false){
@@ -1219,10 +1451,73 @@
 
     delete store.dailyPrompts[date];
     delete store.dailySheetRecords[date];
+    if(store.breakfastReadings)delete store.breakfastReadings[date];
     save();render();renderSheetHistory();
     if($('#sheetDate').value===date){setPromptEditor(buildPrompt(),false);$('#analysisResult').value='';$('#jsonInput').value='';$('#preview').classList.remove('show');$('#applyImport').disabled=true;pendingImport=null;refreshJsonCommand();$('#promptSaveState').textContent='아직 저장되지 않음';updateWorkflowState();}
     toast(`${recordLabel(date)}과 해당 반영 데이터를 삭제했습니다.`);
   }
+
+  function hardDeleteSheetDate(date){
+    if(!date)return;
+    const rec=store.dailySheetRecords?.[date]||{};
+    const parsedReservations=Array.isArray(rec.parsed?.reservations)?rec.parsed.reservations:[];
+    const parsedBlocks=Array.isArray(rec.parsed?.blocks)?rec.parsed.blocks:[];
+    const changedReservationIds=new Set((rec.calendar_changes?.reservations||[]).map(x=>x.id).filter(Boolean));
+    const changedBlockIds=new Set((rec.calendar_changes?.blocks||[]).map(x=>x.id).filter(Boolean));
+    const matchesParsedReservation=r=>parsedReservations.some(p=>String(p.room)===String(r.room) && p.check_in===r.check_in && p.check_out===r.check_out && (!p.guest_name || !r.guest_name || p.guest_name===r.guest_name));
+    const matchesParsedBlock=b=>parsedBlocks.some(p=>String(p.room)===String(b.room) && (p.date||date)===(b.date||date) && (!p.label || !b.label || p.label===b.label));
+    const reservationIdsToDelete=new Set();
+    store.reservations.forEach(r=>{if(changedReservationIds.has(r.id)||r.import_sheet_date===date||r.last_import_sheet_date===date||matchesParsedReservation(r))reservationIdsToDelete.add(r.id)});
+    const blockIdsToDelete=new Set();
+    store.blocks.forEach(b=>{if(changedBlockIds.has(b.id)||b.import_sheet_date===date||b.last_import_sheet_date===date||matchesParsedBlock(b))blockIdsToDelete.add(b.id)});
+    const rCount=reservationIdsToDelete.size, bCount=blockIdsToDelete.size;
+    if(!confirm(`${recordLabel(date)}을 완전히 삭제할까요?\n\n저장 기록뿐 아니라 이 날짜 시트에 들어 있던 예약 ${rCount}건과 메모/블럭 ${bCount}건을 달력에서 실제로 삭제합니다.\n이전 상태로 되돌리지 않습니다.\n\n숙박바가 다른 날짜까지 이어져 있으면 그 예약바 전체가 사라질 수 있습니다.`))return;
+    store.reservations=store.reservations.filter(r=>!reservationIdsToDelete.has(r.id));
+    store.blocks=store.blocks.filter(b=>!blockIdsToDelete.has(b.id));
+    reservationIdsToDelete.forEach(id=>{if(store.reservationEdits)delete store.reservationEdits[id]});
+    delete store.dailyPrompts[date];
+    delete store.dailySheetRecords[date];
+    if(store.breakfastReadings)delete store.breakfastReadings[date];
+    save();render();renderSheetHistory();renderGuestRoster();
+    if($('#sheetDate').value===date){setPromptEditor(buildPrompt(),false);$('#analysisResult').value='';$('#jsonInput').value='';$('#preview').classList.remove('show');$('#applyImport').disabled=true;pendingImport=null;refreshJsonCommand();$('#promptSaveState').textContent='아직 저장되지 않음';updateWorkflowState();}
+    toast(`${recordLabel(date)} 완전삭제 · 예약 ${rCount}건 정리`);
+  }
+
+  function openPurgeModal(){
+    const d=selectedDate||$('#quickDate').value||iso(new Date().getFullYear(),new Date().getMonth(),new Date().getDate());
+    $('#purgeStart').value=d;$('#purgeEnd').value=d;$('#purgeLunch').checked=false;$('#purgeModal').classList.add('open');
+  }
+  function purgeDateRange(){
+    const start=$('#purgeStart').value, end=$('#purgeEnd').value;
+    if(!start||!end){alert('삭제할 시작일과 종료일을 선택해주세요.');return;}
+    if(start>end){alert('종료일은 시작일보다 빠를 수 없습니다.');return;}
+    const overlaps=r=>r.check_in&&r.check_out&&r.check_in<=end&&r.check_out>=start;
+    const reservationIds=new Set(store.reservations.filter(overlaps).map(r=>r.id));
+    const blockIds=new Set(store.blocks.filter(b=>b.date>=start&&b.date<=end).map(b=>b.id));
+    const recordDates=[...new Set([...Object.keys(store.dailyPrompts||{}),...Object.keys(store.dailySheetRecords||{})])].filter(d=>d>=start&&d<=end);
+    const lunchCount=$('#purgeLunch').checked?store.lunchReservations.filter(x=>x.date>=start&&x.date<=end).length:0;
+    const msg=`${formatKoreanDate(start)}${start===end?'':` ~ ${formatKoreanDate(end)}`} 일정을 완전히 삭제할까요?\n\n객실 예약 ${reservationIds.size}건 · 메모/블럭 ${blockIds.size}건 · 일일시트 기록 ${recordDates.length}건${$('#purgeLunch').checked?` · 중식 ${lunchCount}건`:''}\n\n선택 날짜에 걸쳐 있는 다박 예약은 예약 전체가 삭제됩니다. 이 작업은 자동 복구되지 않습니다.`;
+    if(!confirm(msg))return;
+    store.reservations=store.reservations.filter(r=>!reservationIds.has(r.id));
+    store.blocks=store.blocks.filter(b=>!blockIds.has(b.id));
+    reservationIds.forEach(id=>{if(store.reservationEdits)delete store.reservationEdits[id]});
+    recordDates.forEach(d=>{delete store.dailyPrompts[d];delete store.dailySheetRecords[d]});
+    if(store.breakfastReadings)Object.keys(store.breakfastReadings).forEach(d=>{if(d>=start&&d<=end)delete store.breakfastReadings[d]});
+    if($('#purgeLunch').checked)store.lunchReservations=store.lunchReservations.filter(x=>!(x.date>=start&&x.date<=end));
+    save();render();renderSheetHistory();renderGuestRoster();
+    $('#purgeModal').classList.remove('open');
+    if($('#sheetDate').value>=start&&$('#sheetDate').value<=end){setPromptEditor(buildPrompt(),false);$('#analysisResult').value='';$('#jsonInput').value='';$('#preview').classList.remove('show');$('#applyImport').disabled=true;pendingImport=null;refreshJsonCommand();$('#promptSaveState').textContent='아직 저장되지 않음';updateWorkflowState();}
+    toast(`선택 날짜 일정 완전삭제 · 예약 ${reservationIds.size}건`);
+  }
+  function wipeAllData(){
+    const r=store.reservations.length,b=store.blocks.length,l=(store.lunchReservations||[]).length;
+    if(!confirm(`toyou의 모든 저장 데이터를 완전히 삭제할까요?\n\n객실 예약 ${r}건 · 메모/블럭 ${b}건 · 중식 ${l}건 · 모든 일일시트 기록을 삭제합니다.\n\n처음 예시 데이터로 돌아가는 것이 아니라, 달력을 완전히 빈 상태로 만듭니다.`))return;
+    store={reservations:[],blocks:[],dailyPrompts:{},dailySheetRecords:{},lunchReservations:[],reservationEdits:{},breakfastReadings:{}};
+    save();pendingImport=null;render();renderSheetHistory();renderGuestRoster();
+    setPromptEditor(buildPrompt(),false);$('#analysisResult').value='';$('#jsonInput').value='';$('#preview').classList.remove('show');$('#applyImport').disabled=true;refreshJsonCommand();$('#promptSaveState').textContent='아직 저장되지 않음';updateWorkflowState();
+    toast('모든 데이터가 완전히 삭제되었습니다.');
+  }
+
   function clearAllSheetRecords(){
     const dates=[...new Set([...Object.keys(store.dailyPrompts||{}),...Object.keys(store.dailySheetRecords||{})])].sort().reverse();
     if(!dates.length){toast('삭제할 시트 저장 기록이 없습니다.');return;}
@@ -1524,9 +1819,19 @@ Final check before answering: JSON syntax must be valid; no duplicate copies of 
   $('#todayBtn').onclick=()=>{const d=new Date();current={year:d.getFullYear(),month:d.getMonth()};selectedDate=iso(d.getFullYear(),d.getMonth(),d.getDate());$('#quickDate').value=selectedDate;render()};
   $('#quickDate').addEventListener('change',e=>{if(!e.target.value)return;selectedDate=e.target.value;const d=toDate(selectedDate);current={year:d.getFullYear(),month:d.getMonth()};render()});
   $('#guestRosterBtn').onclick=()=>{renderGuestRoster();$('#guestRosterModal').classList.add('open')};
-  $('#breakfastBtn').onclick=()=>{renderBreakfastModal();$('#breakfastModal').classList.add('open')};
+  $('#breakfastBtn').onclick=()=>{renderBreakfastInline();$('#breakfastInline')?.scrollIntoView({behavior:'smooth',block:'start'})};
+
+  $('#breakfastInlineDate').addEventListener('change',e=>{const d=e.target.value;if(!d)return;selectedDate=d;const dt=toDate(d);current={year:dt.getFullYear(),month:dt.getMonth()};$('#quickDate').value=d;render()});
+  $('#saveBreakfastInline').onclick=saveBreakfastInline;
+  $('#saveBreakfastInlineBottom').onclick=saveBreakfastInline;
+  $('#fillBreakfastFromRooms').onclick=refreshBreakfastFromRooms;
+  $('#breakfastInlineRows').addEventListener('input',e=>{if(!e.target.closest('[data-bf-field]'))return;updateBreakfastInlineTotals();collectBreakfastInline(false);$('#breakfastInlineState').textContent=`${formatKoreanDate($('#breakfastInlineDate').value)} · 자동저장됨`;});
+  $('#breakfastInlineRows').addEventListener('change',e=>{if(!e.target.closest('[data-bf-field]'))return;collectBreakfastInline(false);});
+  $('#breakfastInlineRows').addEventListener('click',e=>{const btn=e.target.closest('[data-bf-complete]');const tr=e.target.closest('tr[data-bf-room]');if(tr){$$('#breakfastInlineRows tr').forEach(x=>x.classList.remove('focus-row'));tr.classList.add('focus-row')}if(!btn)return;btn.classList.toggle('done');btn.textContent=btn.classList.contains('done')?'완성 ✓':'완성';tr?.classList.toggle('is-complete',btn.classList.contains('done'));collectBreakfastInline(false);});
+  $('#bfFrontNote').addEventListener('input',()=>collectBreakfastInline(false));
+  $('#bfKitchenNote').addEventListener('input',()=>collectBreakfastInline(false));
+
   $('#lunchBtn').onclick=()=>{$('#lunchListDate').value=selectedDate;resetLunchForm(selectedDate);renderLunchList();$('#lunchModal').classList.add('open')};
-  $('#jumpSelected').onclick=()=>{const d=toDate(selectedDate);current={year:d.getFullYear(),month:d.getMonth()};render();document.querySelector(`.day[data-date="${selectedDate}"]`)?.scrollIntoView({behavior:'smooth',block:'center'})};
   $('#searchInput').addEventListener('input',e=>{searchTerm=e.target.value.trim().toLowerCase();renderCalendar()});
   $$('.view-toggle button').forEach(b=>b.onclick=()=>{$$('.view-toggle button').forEach(x=>x.classList.remove('active'));b.classList.add('active');const v=b.dataset.view;$('#calendarShell').classList.toggle('hidden',v==='timeline');$('#timeline').classList.toggle('active',v==='timeline')});
   $('#openImport').onclick=()=>{$('#sheetDate').value=selectedDate;const rec=store.dailySheetRecords[selectedDate]||{};$('#analysisResult').value=rec.analysis_text||'';$('#jsonInput').value=rec.json_text||'';$('#importModal').classList.add('open');loadPromptForDate(selectedDate);refreshJsonCommand();renderSheetHistory();updateWorkflowState()};
@@ -1548,11 +1853,13 @@ Final check before answering: JSON syntax must be valid; no duplicate copies of 
   $('[data-close="reservationEditModal"]').onclick=()=>$('#reservationEditModal').classList.remove('open');
   $('[data-close="breakfastModal"]').onclick=()=>$('#breakfastModal').classList.remove('open');
   $('[data-close="lunchModal"]').onclick=()=>$('#lunchModal').classList.remove('open');
+  $$('[data-close="purgeModal"]').forEach(b=>b.onclick=()=>$('#purgeModal').classList.remove('open'));
   $$('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
   document.addEventListener('click',e=>{
     const loadBtn=e.target.closest('.load-record'); if(loadBtn){openSavedRecord(loadBtn.dataset.recordDate,false);updateWorkflowState();return;}
     const editBtn=e.target.closest('.edit-record'); if(editBtn){openSavedRecord(editBtn.dataset.recordDate,true);updateWorkflowState();return;}
     const delRecord=e.target.closest('.delete-record'); if(delRecord){deleteSheetRecord(delRecord.dataset.recordDate);return;}
+    const hardDelRecord=e.target.closest('.hard-delete-record'); if(hardDelRecord){hardDeleteSheetDate(hardDelRecord.dataset.recordDate);return;}
     const editReservation=e.target.closest('[data-edit-reservation]'); if(editReservation){$('#detailModal').classList.remove('open');openReservationEditor(editReservation.dataset.editReservation);return;}
     const editLunch=e.target.closest('.edit-lunch'); if(editLunch){editLunchReservation(editLunch.dataset.lunchId);return;}
     const delLunch=e.target.closest('.delete-lunch'); if(delLunch){const id=delLunch.dataset.lunchId;if(confirm('이 중식 예약을 삭제할까요?')){store.lunchReservations=store.lunchReservations.filter(x=>x.id!==id);save();renderLunchList();toast('중식 예약을 삭제했습니다.')}return;}
@@ -1563,7 +1870,9 @@ Final check before answering: JSON syntax must be valid; no duplicate copies of 
   $('#saveReservationEdit').onclick=saveReservationEdit;
   $('#deleteReservation').onclick=deleteReservationByEditor;
   $('#resRoom').addEventListener('change',e=>{$('#resRoomType').value=ROOM_TYPE[e.target.value]||''});
-  $('#resetBtn').onclick=()=>{if(confirm('toyou의 저장 내용을 전체 초기화할까요?\n\n일일 시트 기록·중식 예약·직접 반영한 내용이 지워지고, 처음 제공된 8/29~9/1 기본 객실 데이터 상태로 돌아갑니다.')){store=clone(seedData);store.dailyPrompts={};store.dailySheetRecords={};store.lunchReservations=[];store.reservationEdits={};save();current={year:2026,month:8};selectedDate='2026-09-01';$('#quickDate').value=selectedDate;$('#sheetDate').value=selectedDate;setPromptEditor(buildPrompt(),false);$('#analysisResult').value='';$('#jsonInput').value='';pendingImport=null;refreshJsonCommand();$('#preview').classList.remove('show');$('#applyImport').disabled=true;$('#promptSaveState').textContent='아직 저장되지 않음';render();renderSheetHistory();updateWorkflowState();toast('전체 초기화가 완료되었습니다.')}};
+  $('#openPurge').onclick=openPurgeModal;
+  $('#runPurge').onclick=purgeDateRange;
+  $('#wipeAllBtn').onclick=wipeAllData;
   $('#exportBtn').onclick=()=>{
     const blob=new Blob([JSON.stringify(store,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='toyou-data.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
   };
