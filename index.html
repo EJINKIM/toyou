@@ -543,7 +543,7 @@
       <div class="modal-actions" style="margin-top:0;justify-content:flex-end"><button class="btn soft" id="copyJsonCommand">JSON 변환 명령 복사</button></div>
 
       <div class="field"><label>④ 완성된 JSON 붙여넣기</label><textarea id="jsonInput" placeholder='예: {"sheet_date":"2026-09-01","reservations":[...]}'></textarea></div>
-      <div class="notice">이 방식은 첫 단계에서 이미지를 사람이 읽듯 글로 풀어 확인하고, 두 번째 단계에서 그 글만 JSON으로 바꾸기 때문에 잘못 읽은 부분을 중간에 직접 수정할 수 있습니다. 날짜별 해석 결과와 JSON은 각각 저장 기록에 남습니다.</div>
+      <div class="notice">이 방식은 첫 단계에서 이미지를 글로 풀어 확인하고, 두 번째 단계에서 그 글만 JSON으로 바꿉니다. <b>선택한 시트 기준일은 사이트가 강제로 유지</b>하므로 JSON이 예전 날짜를 잘못 반환해도 기준일은 자동 보정됩니다. 단, 각 고객의 실제 CHECK-IN / CHECK-OUT 날짜는 해석 결과에 적힌 날짜를 그대로 사용합니다.</div>
       <div class="preview" id="preview"><div class="preview-head" id="previewHead"></div><div class="preview-list" id="previewList"></div></div>
       <div class="modal-actions"><button class="btn" id="previewBtn">미리보기</button><button class="btn primary" id="applyImport" disabled>저장하고 캘린더에 반영</button></div>
       <div class="record-panel">
@@ -1169,41 +1169,44 @@ Rules:
 3. Preserve guest names exactly as written in the transcription.
 4. Keep guest_count as a STRING so values such as "2+2" and "1+" are preserved.
 5. Dates must be YYYY-MM-DD. If the transcription says BLANK or UNCLEAR, use null.
-6. If the transcription describes an outgoing guest and a new incoming guest for the same room/date, create TWO separate reservation objects with their own check_in/check_out dates. Do not merge the guests.
-7. Operational notes without a guest belong in blocks, not reservations.
-8. Return valid JSON ONLY. No markdown fences, explanation, heading, or comments.
-9. Do not invent a reservation that is absent from the transcription.
-10. Use null for unknown/blank values, except guest_count which may remain a visible string.
+6. IMPORTANT: ${date} is ONLY the sheet date. Do not use it as a guest check-in or check-out date unless the transcription explicitly says so.
+7. Do not copy any date, room number, guest count, or other sample-looking value from this instruction. Every reservation field must come from the transcription below.
+8. A sheet dated ${date} may legitimately contain guests who checked in on an earlier date. Preserve those earlier CHECK-IN dates exactly when they are written in the transcription.
+9. If the transcription describes an outgoing guest and a new incoming guest for the same room/date, create TWO separate reservation objects with their own check_in/check_out dates. Do not merge the guests.
+10. Operational notes without a guest belong in blocks, not reservations.
+11. Return valid JSON ONLY. No markdown fences, explanation, heading, or comments.
+12. Do not invent a reservation that is absent from the transcription.
+13. Use null for unknown/blank values, except guest_count which may remain a visible string.
 
 Required JSON schema:
 {
   "sheet_date": "${date}",
   "reservations": [
     {
-      "room": "202",
-      "room_type": "스탠다드",
+      "room": "ROOM NUMBER FROM TRANSCRIPTION",
+      "room_type": null,
       "guest_name": "VISIBLE NAME EXACTLY AS TRANSCRIBED",
       "nationality": null,
       "source": null,
       "handler": null,
       "booking_date": null,
-      "guest_count": "2+2",
-      "check_in": "2026-08-31",
-      "check_out": "2026-09-02",
+      "guest_count": null,
+      "check_in": null,
+      "check_out": null,
       "phone": null,
       "extra_guest": null,
       "extra_bedding": null,
       "parking": null,
       "note": null,
-      "reported_nights": 2
+      "reported_nights": null
     }
   ],
   "blocks": [
     {
-      "room": "401",
+      "room": "ROOM NUMBER FROM TRANSCRIPTION",
       "date": "${date}",
-      "label": "운영메모",
-      "note": "VISIBLE OPERATIONAL NOTE"
+      "label": null,
+      "note": null
     }
   ]
 }
@@ -1238,10 +1241,16 @@ Final check before answering: JSON syntax must be valid; no duplicate copies of 
   function previewImport(){
     try{
       const obj=JSON.parse(cleanJsonText($('#jsonInput').value));
+      const selectedSheetDate=$('#sheetDate').value||selectedDate;
+      const returnedSheetDate=obj.sheet_date||null;
+      if(returnedSheetDate && returnedSheetDate!==selectedSheetDate){
+        obj._returned_sheet_date=returnedSheetDate;
+      }
+      obj.sheet_date=selectedSheetDate;
       const errors=validateImport(obj);if(errors.length)throw new Error(errors.join('\n'));
       pendingImport=obj;
       const rs=obj.reservations||[], bs=obj.blocks||[];
-      $('#previewHead').textContent=`예약 ${rs.length}건 · 메모/블럭 ${bs.length}건 · 기준일 ${obj.sheet_date||$('#sheetDate').value}`;
+      $('#previewHead').textContent=`예약 ${rs.length}건 · 메모/블럭 ${bs.length}건 · 기준일 ${obj.sheet_date}` + (obj._returned_sheet_date?` · JSON의 잘못된 기준일 ${obj._returned_sheet_date} → ${obj.sheet_date}로 자동 수정`:``);
       $('#previewList').innerHTML=rs.map(r=>`<div class="preview-item"><div class="p-room">${esc(r.room)}</div><div><b>${esc(r.guest_name||'예약자 미입력')}</b><div class="p-date">${esc(r.check_in)} → ${esc(r.check_out)} · ${esc(r.source||'채널 미입력')}</div></div><div>${esc(r.guest_count||'-')}명</div></div>`).join('')+bs.map(b=>`<div class="preview-item"><div class="p-room">${esc(b.room)}</div><div><b>${esc(b.label||'메모')}</b><div class="p-date">${esc(b.date||obj.sheet_date||'')}</div></div><div>BLOCK</div></div>`).join('');
       $('#preview').classList.add('show');$('#applyImport').disabled=false;
     }catch(e){pendingImport=null;$('#applyImport').disabled=true;$('#preview').classList.remove('show');alert('JSON을 확인해주세요.\n\n'+e.message)}
