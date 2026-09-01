@@ -1,0 +1,1347 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>toyou · stay calendar</title>
+<style>
+  :root{
+    --bg:#f4f6f8; --paper:#ffffff; --ink:#1f2933; --muted:#6b7280; --line:#e5e7eb;
+    --navy:#172554; --indigo:#4f46e5; --blue:#2563eb; --cyan:#0891b2; --teal:#0f766e;
+    --green:#15803d; --amber:#b45309; --rose:#be123c; --violet:#7c3aed; --slate:#475569;
+    --shadow:0 18px 48px rgba(15,23,42,.10); --radius:20px;
+    --rooms:13;
+  }
+  *{box-sizing:border-box}
+  html,body{min-height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,"Noto Sans KR",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  button,input,textarea,select{font:inherit}
+  button{cursor:pointer}
+  .app{max-width:1800px;margin:0 auto;padding:24px}
+
+  .topbar{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;margin-bottom:18px}
+  .brand-wrap{display:flex;align-items:center;gap:14px;min-width:0}
+  .logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(145deg,#10172a,#4656d9);display:grid;place-items:center;color:#fff;font-weight:900;letter-spacing:-1px;box-shadow:0 10px 26px rgba(79,70,229,.25)}
+  .brand{font-weight:900;font-size:28px;letter-spacing:-1.2px;line-height:1}
+  .subtitle{font-size:13px;color:var(--muted);margin-top:7px}
+  .actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 13px;border-radius:12px;font-weight:750;box-shadow:0 1px 0 rgba(15,23,42,.03);transition:.18s ease}
+  .btn:hover{transform:translateY(-1px);border-color:#cbd5e1;box-shadow:0 7px 18px rgba(15,23,42,.07)}
+  .btn.primary{background:#111827;color:#fff;border-color:#111827}
+  .btn.soft{background:#eef2ff;border-color:#dfe3ff;color:#3730a3}
+  .btn.danger{color:#b91c1c;background:#fff7f7;border-color:#fecaca}
+  .btn.small{padding:7px 10px;border-radius:10px;font-size:12px}
+
+  .controlbar{background:rgba(255,255,255,.88);backdrop-filter:blur(12px);border:1px solid rgba(226,232,240,.9);border-radius:18px;padding:12px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;box-shadow:0 8px 28px rgba(15,23,42,.05);position:sticky;top:8px;z-index:15}
+  .month-nav{display:flex;align-items:center;gap:7px}
+  .iconbtn{width:38px;height:38px;border:1px solid var(--line);background:#fff;border-radius:12px;color:#374151;font-size:20px}
+  .month-title{min-width:150px;text-align:center;font-size:20px;font-weight:900;letter-spacing:-.7px}
+  .search{position:relative;max-width:560px;width:100%;justify-self:center}
+  .search input{width:100%;border:1px solid var(--line);background:#f8fafc;border-radius:12px;padding:10px 13px 10px 38px;outline:none}
+  .search input:focus{border-color:#a5b4fc;box-shadow:0 0 0 4px rgba(99,102,241,.09);background:#fff}
+  .search:before{content:'⌕';position:absolute;left:14px;top:7px;color:#94a3b8;font-size:22px}
+  .view-toggle{display:flex;background:#f1f5f9;border-radius:12px;padding:3px}
+  .view-toggle button{border:0;background:transparent;border-radius:9px;padding:8px 12px;font-weight:800;color:#64748b}
+  .view-toggle button.active{background:#fff;color:#111827;box-shadow:0 2px 8px rgba(15,23,42,.08)}
+
+  .dashboard{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:10px;margin:14px 0}
+  .metric{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 15px;box-shadow:0 6px 18px rgba(15,23,42,.04);min-width:0}
+  .metric .label{font-size:12px;color:var(--muted);font-weight:800}
+  .metric .num{font-size:27px;font-weight:950;letter-spacing:-1px;margin-top:5px}
+  .metric .hint{font-size:11px;color:#94a3b8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .metric.emph{background:#111827;color:#fff;border-color:#111827}
+  .metric.emph .label,.metric.emph .hint{color:#cbd5e1}
+
+  .calendar-shell{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+  .weekdays{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--line);background:#f8fafc}
+  .weekday{padding:12px 10px;text-align:center;font-size:12px;font-weight:900;color:#64748b}
+  .weekday.sun{color:#dc2626}.weekday.sat{color:#2563eb}
+  .calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));}
+  .day{min-height:230px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 9px;background:#fff;position:relative;transition:.15s}
+  .day:nth-child(7n){border-right:0}
+  .day.outside{background:#fafafa;color:#9ca3af}
+  .day:hover{background:#fbfdff}
+  .day.selected{box-shadow:inset 0 0 0 2px #6366f1;z-index:2}
+  .day.today .date-pill{background:#111827;color:#fff}
+  .day-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:6px}
+  .date-pill{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;font-size:12px;font-weight:900}
+  .day.outside .date-pill{opacity:.45}
+  .day-count{font-size:10px;color:#94a3b8;background:#f1f5f9;padding:4px 6px;border-radius:99px;white-space:nowrap}
+  .cards{display:flex;flex-direction:column;gap:5px}
+  .guest-card{border:1px solid #e8ebef;border-radius:10px;padding:7px 8px;background:#fff;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:7px;align-items:center;cursor:pointer;box-shadow:0 2px 7px rgba(15,23,42,.035);min-width:0}
+  .guest-card:hover{border-color:#c7d2fe;box-shadow:0 6px 16px rgba(79,70,229,.08)}
+  .guest-card.dim{opacity:.18}
+  .room{font-size:11px;font-weight:950;min-width:28px;color:#111827}
+  .guest-main{min-width:0}
+  .guest-name{font-size:11px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .guest-sub{font-size:9.5px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+  .stay-badge{font-size:9px;font-weight:900;padding:4px 6px;border-radius:7px;white-space:nowrap}
+  .status-in{border-left:3px solid #16a34a;background:#f7fff9}
+  .status-stay{border-left:3px solid #4f46e5;background:#fafaff}
+  .status-out{border-left:3px solid #e11d48;background:#fffafb}
+  .status-in .stay-badge{color:#166534;background:#dcfce7}
+  .status-stay .stay-badge{color:#4338ca;background:#e0e7ff}
+  .status-out .stay-badge{color:#9f1239;background:#ffe4e6}
+  .block-card{border:1px dashed #d97706;background:#fffbeb;color:#92400e;border-radius:10px;padding:8px;font-size:10px;font-weight:850}
+  .more{margin-top:6px;border:0;background:#f8fafc;color:#475569;border-radius:8px;padding:6px;width:100%;font-size:10px;font-weight:800}
+
+  .lower{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 8px 28px rgba(15,23,42,.05);padding:16px}
+  .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .panel-title{font-weight:950;font-size:16px;letter-spacing:-.4px}
+  .panel-sub{font-size:11px;color:#94a3b8;margin-top:4px}
+  .room-grid{display:grid;grid-template-columns:repeat(7,minmax(90px,1fr));gap:8px}
+  .room-tile{min-height:92px;border:1px solid var(--line);border-radius:13px;padding:10px;background:#f8fafc;position:relative}
+  .room-tile .rn{font-size:14px;font-weight:950}
+  .room-tile .rt{font-size:9px;color:#94a3b8;margin-top:2px}
+  .room-tile .rstatus{font-size:10px;font-weight:900;margin-top:12px}
+  .room-tile .rguest{font-size:10px;color:#475569;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .room-tile.occupied{background:#f0fdf4;border-color:#bbf7d0}
+  .room-tile.staying{background:#eef2ff;border-color:#c7d2fe}
+  .room-tile.turnover{background:#fff7ed;border-color:#fed7aa}
+  .room-tile.vacant{background:#f8fafc}
+  .room-tile .mini-badge{position:absolute;right:8px;top:8px;font-size:8px;font-weight:950;padding:3px 5px;border-radius:6px;background:#fff;border:1px solid rgba(148,163,184,.4)}
+  .source-list{display:flex;flex-direction:column;gap:9px}
+  .source-row{display:grid;grid-template-columns:minmax(78px,1fr) 2fr auto;gap:10px;align-items:center;font-size:11px}
+  .bar{height:8px;background:#f1f5f9;border-radius:99px;overflow:hidden}.bar>i{display:block;height:100%;background:#6366f1;border-radius:99px}
+  .source-count{font-weight:900;color:#475569}
+  .legend{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+  .legend span{font-size:10px;font-weight:800;padding:5px 7px;border-radius:8px;background:#f8fafc;color:#64748b;border:1px solid var(--line)}
+
+  .timeline{display:none;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:auto;max-height:72vh}
+  .timeline.active{display:block}.calendar-shell.hidden{display:none}
+  .timeline table{border-collapse:separate;border-spacing:0;min-width:1450px;width:100%;font-size:10px}
+  .timeline th,.timeline td{border-bottom:1px solid var(--line);border-right:1px solid #f1f5f9;height:33px;text-align:center;padding:0}
+  .timeline thead th{position:sticky;top:0;background:#f8fafc;z-index:4;font-weight:900;color:#64748b}
+  .timeline .sticky-room{position:sticky;left:0;background:#fff;z-index:3;width:92px;min-width:92px;font-weight:950}
+  .timeline thead .sticky-room{z-index:5;background:#f8fafc}
+  .tcell{height:22px;margin:4px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+  .t-in{background:#dcfce7;color:#166534}.t-stay{background:#e0e7ff;color:#4338ca}.t-out{background:#ffe4e6;color:#9f1239}.t-block{background:#fef3c7;color:#92400e}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.46);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
+  .modal-backdrop.open{display:flex}
+  .modal{width:min(920px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:24px;box-shadow:0 30px 90px rgba(15,23,42,.3);border:1px solid rgba(255,255,255,.5)}
+  .modal-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);z-index:2}
+  .modal-title{font-size:18px;font-weight:950}
+  .close{border:0;background:#f1f5f9;width:35px;height:35px;border-radius:11px;font-size:18px}
+  .modal-body{padding:20px}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+  .step{padding:10px 12px;border-radius:12px;background:#f8fafc;border:1px solid var(--line);font-size:11px;color:#64748b}
+  .step b{display:block;color:#111827;font-size:12px;margin-bottom:2px}
+  .field{margin:12px 0}
+  .field label{display:block;font-size:11px;font-weight:900;color:#475569;margin-bottom:6px}
+  .field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:11px 12px;outline:none}
+  .field textarea{min-height:230px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;line-height:1.5}
+  .field input:focus,.field textarea:focus{background:#fff;border-color:#a5b4fc;box-shadow:0 0 0 4px rgba(99,102,241,.08)}
+  .prompt-box{background:#0f172a;color:#e2e8f0;border-radius:14px;padding:14px;white-space:pre-wrap;font-size:11px;line-height:1.55;max-height:260px;overflow:auto}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
+  .notice{padding:10px 12px;border-radius:11px;font-size:11px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+  .preview{display:none;margin-top:12px;border:1px solid var(--line);border-radius:14px;overflow:hidden}.preview.show{display:block}
+  .preview-head{padding:10px 12px;background:#f8fafc;font-size:11px;font-weight:900;border-bottom:1px solid var(--line)}
+  .preview-list{max-height:220px;overflow:auto}
+  .preview-item{display:grid;grid-template-columns:52px 1fr auto;gap:10px;padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:11px;align-items:center}.preview-item:last-child{border-bottom:0}
+  .preview-item .p-room{font-weight:950}.preview-item .p-date{color:#64748b;font-size:10px}
+  .toast{position:fixed;right:20px;bottom:20px;background:#111827;color:#fff;padding:11px 14px;border-radius:12px;font-size:12px;font-weight:800;box-shadow:0 14px 30px rgba(15,23,42,.25);opacity:0;transform:translateY(8px);pointer-events:none;transition:.2s;z-index:99}.toast.show{opacity:1;transform:none}
+
+  .detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.detail-item{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:11px}.detail-item .k{font-size:10px;color:#94a3b8;font-weight:800}.detail-item .v{font-size:13px;font-weight:850;margin-top:4px;word-break:break-word}.detail-note{grid-column:1/-1}
+
+  @media(max-width:1200px){.dashboard{grid-template-columns:repeat(3,1fr)}.lower{grid-template-columns:1fr}.room-grid{grid-template-columns:repeat(5,1fr)}.day{min-height:210px}.guest-sub{display:none}}
+  @media(max-width:800px){.app{padding:12px}.topbar{grid-template-columns:1fr}.actions{justify-content:flex-start}.controlbar{grid-template-columns:1fr;position:static}.search{justify-self:stretch;max-width:none}.month-nav{justify-content:center}.view-toggle{justify-content:center}.dashboard{grid-template-columns:repeat(2,1fr)}.calendar-shell{overflow:auto}.weekdays,.calendar{min-width:900px}.day{min-height:205px}.lower{display:block}.panel{margin-top:12px}.room-grid{grid-template-columns:repeat(3,1fr)}.steps{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr 1fr}.detail-note{grid-column:1/-1}}
+
+
+  /* ── TOYOU soft warm redesign ───────────────────────── */
+  :root{
+    --bg:#fbf8f5;--paper:#fffdfb;--ink:#4d4747;--muted:#8b8280;--line:#eee6e1;
+    --peach:#f6ddd0;--peach-ink:#8a5f55;--lav:#e9e3f0;--lav-ink:#6e627c;
+    --sky:#dfecef;--sky-ink:#58727a;--sage:#e4eee0;--sage-ink:#5e7359;
+    --cream:#faf2e6;--rose:#f2dfe2;--shadow:0 22px 58px rgba(106,83,75,.10);
+  }
+  html{background:var(--bg)}
+  body{background:
+    radial-gradient(circle at 7% 2%,rgba(244,219,207,.42),transparent 25%),
+    radial-gradient(circle at 93% 10%,rgba(226,221,238,.45),transparent 28%),
+    var(--bg);color:var(--ink);font-family:"SUIT","Pretendard","Apple SD Gothic Neo","Noto Sans KR",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.015em}
+  .app{max-width:1920px;padding:28px 30px 48px}
+  .topbar{margin-bottom:20px;align-items:end}
+  .brand-wrap{gap:12px}
+  .logo{width:43px;height:43px;border-radius:50%;background:#f2e2dd;color:#8a665f;box-shadow:none;font-family:Georgia,"Times New Roman",serif;font-size:17px;font-weight:700;letter-spacing:-.8px}
+  .brand{font-family:Georgia,"Times New Roman",serif;text-transform:lowercase;font-weight:500;font-size:35px;letter-spacing:-1.4px;color:#5c5050}
+  .subtitle{font-size:12.5px;color:#998c88;margin-top:5px;letter-spacing:-.01em}
+  .actions{gap:8px}
+  .btn{border-color:#eadfd9;background:rgba(255,253,251,.86);color:#675d5a;border-radius:999px;padding:10px 15px;font-weight:700;box-shadow:none}
+  .btn:hover{transform:translateY(-1px);border-color:#ddcec6;background:#fff;box-shadow:0 8px 22px rgba(111,91,82,.08)}
+  .btn.soft{background:#f2e7ed;border-color:#ebdbe3;color:#765f6a}
+  .btn.primary{background:#7d696f;color:#fff;border-color:#7d696f}
+  .btn.danger{background:#fff7f6;color:#a26a6a;border-color:#f1d8d4}
+  .btn.small{font-size:11px;padding:7px 11px}
+  .iconbtn{border-color:#eadfd9;background:#fffdfa;color:#776b68;border-radius:50%;font-size:19px;box-shadow:none}
+
+  .controlbar{background:rgba(255,253,251,.80);border-color:#eee3dd;box-shadow:0 10px 32px rgba(114,93,84,.06);border-radius:24px;padding:10px 12px;backdrop-filter:blur(18px)}
+  .month-title{font-size:21px;font-weight:800;color:#615654;letter-spacing:-.7px}
+  .search input{background:#fffaf7;border-color:#eee3dd;border-radius:999px;padding:11px 16px 11px 40px;color:#5c5351}
+  .search input::placeholder{color:#b0a6a2}
+  .search input:focus{border-color:#d9c5cf;box-shadow:0 0 0 4px rgba(206,183,194,.13)}
+  .search:before{color:#b3a6a1}
+  .view-toggle{background:#f4eeea;border-radius:999px;padding:3px}
+  .view-toggle button{border-radius:999px;color:#918481;font-size:11px;padding:8px 13px;font-weight:700}
+  .view-toggle button.active{background:#fffdfb;color:#665b58;box-shadow:0 3px 12px rgba(108,89,80,.08)}
+
+  .dashboard{grid-template-columns:1.1fr repeat(5,1fr);gap:11px;margin:15px 0 12px}
+  .soft-guide{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;margin:0 2px 14px;padding:9px 12px;color:#8b7f7b;font-size:10px;font-weight:700}
+  .soft-guide span{display:inline-flex;align-items:center;gap:6px}.guide-dot{width:9px;height:9px;border-radius:50%;display:inline-block}.guide-dot.peach{background:#f0cdbc}.guide-dot.lav{background:#d8cde3}.guide-dot.sky{background:#cbdfe3}
+  .metric{border:0;border-radius:22px;padding:15px 17px;box-shadow:0 10px 28px rgba(108,90,82,.055);background:#fffdfb}
+  .metric:nth-child(1){background:#efe7ec}.metric:nth-child(2){background:#f9eadf}.metric:nth-child(3){background:#ece8f3}.metric:nth-child(4){background:#f6e2d6}.metric:nth-child(5){background:#e6eff1}.metric:nth-child(6){background:#edf3e9}
+  .metric.emph{background:#efe7ec;color:#5d5155;border:0}.metric.emph .label,.metric.emph .hint{color:#94858b}
+  .metric .label{font-size:11px;color:#8f8380;font-weight:700}
+  .metric .num{font-size:26px;font-weight:800;color:#5d5452;letter-spacing:-1px}
+  .metric .hint{font-size:10px;color:#a89d99;margin-top:3px}
+
+  .calendar-shell{border:0;border-radius:28px;box-shadow:var(--shadow);background:#fffdfb;overflow:hidden}
+  .weekdays{background:#fff9f5;border-bottom:1px solid #f0e7e2}
+  .weekday{padding:13px 8px;color:#9a8d89;font-size:11px;font-weight:800}.weekday.sun{color:#bf7c76}.weekday.sat{color:#728f99}
+  .calendar{background:#f3ebe6;gap:1px}
+  .day{min-height:455px;border:0;padding:12px 10px 11px;background:#fffdfb}
+  .day.outside{background:#fcf8f5;color:#bfb6b1}.day:hover{background:#fffaf7}
+  .day.selected{box-shadow:inset 0 0 0 2px #d9c2cc;background:#fffafc;z-index:2}
+  .day.today .date-pill{background:#8a7379;color:#fff}
+  .day-head{margin-bottom:10px}.date-wrap{display:flex;align-items:center;gap:7px}
+  .date-pill{width:30px;height:30px;border-radius:50%;font-size:12px;font-weight:800;color:#6c6260}
+  .today-word{font-size:8px;letter-spacing:.13em;font-weight:900;color:#9d7f88}
+  .day-count{font-size:9.5px;color:#9e918d;background:#f7f0ec;padding:5px 8px;border-radius:999px}
+  .cards{gap:7px}
+
+  .guest-card{border:0;border-radius:18px;padding:9px 9px 9px 8px;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;box-shadow:0 4px 16px rgba(101,82,74,.045);transition:.18s ease;position:relative;overflow:visible}
+  .guest-card:hover{border:0;transform:translateY(-1px);box-shadow:0 9px 24px rgba(101,82,74,.09)}
+  .status-in{border-left:0;background:#f9e9de}.status-stay{border-left:0;background:#f0ebf5}.status-out{border-left:0;background:#eaf2f3}
+  .status-in .stay-badge{color:#97685c;background:#fff7f2}.status-stay .stay-badge{color:#74657f;background:#fbf9fd}.status-out .stay-badge{color:#617c84;background:#f7fcfd}
+  .room-chip{min-width:45px;padding:7px 7px;border-radius:13px;background:rgba(255,255,255,.70);font-size:12px;font-weight:900;color:#675c59;text-align:center;cursor:help;white-space:nowrap;border:1px solid rgba(255,255,255,.7)}
+  .room-chip .water,.water{font-size:11px;vertical-align:1px;margin-right:2px;filter:saturate(.7)}
+  .guest-main{overflow:visible}
+  .guest-row{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0}
+  .guest-name{font-size:12px;font-weight:850;color:#554d4b;min-width:0;width:100%;line-height:1.2}
+  .pax-pill{font-size:8.5px;font-weight:800;border-radius:999px;padding:4px 6px;white-space:nowrap;background:rgba(255,255,255,.65);color:#776d69}
+  .cap-ok{color:#64785f;background:#edf4e9}.cap-warn{color:#926e51;background:#f8eadc}.cap-danger{color:#9f5e62;background:#f8e0e2}.cap-neutral{color:#8d817e;background:#f5efec}
+  .stay-range{display:inline-flex;align-items:center;margin-top:5px;padding:4px 7px;border-radius:999px;background:rgba(255,255,255,.68);color:#746965;font-size:9px;font-weight:800;line-height:1.2;white-space:normal;max-width:100%;overflow:visible;text-overflow:clip}
+  .guest-sub{font-size:8.5px;color:#9a8d89;margin-top:4px}
+  .stay-badge{font-size:8.5px;font-weight:900;padding:5px 7px;border-radius:999px;align-self:start;margin-top:1px}
+  .block-card{border:0;background:#fbf0dd;color:#8a6d47;border-radius:16px;padding:9px 10px;font-size:9.5px;font-weight:800}
+  .block-card small{display:block;font-size:8.5px;font-weight:600;opacity:.8;margin-top:3px;line-height:1.3}
+  .more{background:#f8f1ed;color:#8c7e7a;border-radius:999px;font-size:9.5px}
+
+  .lower{gap:16px;margin-top:18px;grid-template-columns:1.35fr .65fr}
+  .panel{border:0;border-radius:26px;background:#fffdfb;box-shadow:0 14px 36px rgba(104,87,79,.065);padding:18px}
+  .panel-title{font-size:16px;font-weight:800;color:#5d5350}.panel-sub{color:#a49792;font-size:10.5px}
+  .room-grid{grid-template-columns:repeat(7,minmax(125px,1fr));gap:10px}
+  .room-tile{min-height:142px;border:0;border-radius:20px;padding:12px;background:#faf6f3;box-shadow:inset 0 0 0 1px rgba(233,224,219,.78);transition:.16s ease;overflow:visible}
+  .room-tile:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(105,86,77,.08)}
+  .room-tile.occupied{background:#f9e9de;border:0}.room-tile.staying{background:#f0ebf5;border:0}.room-tile.turnover{background:#eaf2f3;border:0}.room-tile.vacant{background:#faf6f3}
+  .room-tile .rn{display:inline-flex;align-items:center;font-size:16px;font-weight:900;background:rgba(255,255,255,.62);padding:5px 8px;border-radius:12px}
+  .room-tile .rt{font-size:9px;color:#988b87;margin-top:5px}.room-tile .rstatus{font-size:10px;font-weight:900;color:#635957;margin-top:12px}.room-tile .rguest{font-size:10px;color:#6e6562;margin-top:4px;font-weight:700}
+  .room-tile .mini-badge{right:10px;top:10px;font-size:8px;background:rgba(255,255,255,.65);border:0;color:#8a7d79;border-radius:999px;padding:4px 6px}
+  .tile-range{display:inline-block;margin-top:7px;background:rgba(255,255,255,.60);border-radius:999px;padding:4px 7px;font-size:8.5px;color:#7c716e;font-weight:800}
+  .tile-cap{margin-top:7px;font-size:8.5px;font-weight:800;line-height:1.35;border-radius:10px;padding:5px 7px;background:rgba(255,255,255,.48)}
+  .source-row{font-size:10.5px;color:#756a67}.bar{background:#f2ebe7;height:7px}.bar>i{background:#c8b4bd}.legend span{background:#faf4f0;color:#8a7d78;border:0;border-radius:999px}
+
+  .timeline{border:0;border-radius:26px;box-shadow:var(--shadow);background:#fffdfb}.timeline thead th{background:#faf5f1;color:#8e817c}.timeline .sticky-room{background:#fffdfb}.timeline thead .sticky-room{background:#faf5f1}
+  .t-in{background:#f7ded0;color:#8f6258}.t-stay{background:#e8e1ef;color:#71617c}.t-out{background:#deecef;color:#5b7780}.t-block{background:#f7ead0;color:#8a6b43}
+
+  .modal-backdrop{background:rgba(77,65,62,.36);backdrop-filter:blur(7px)}
+  .modal{background:#fffdfb;border:0;border-radius:28px}.modal-head{background:rgba(255,253,251,.95);border-bottom-color:#eee5df}.modal-title{font-size:18px;font-weight:800;color:#5b5250}.close{background:#f5eeea;color:#766a67;border-radius:50%}
+  .step{background:#faf5f1;border:0;color:#948783;border-radius:16px}.step b{color:#655b58}.field label{color:#746966}.field input,.field textarea{background:#fcf8f5;border-color:#eee4df;border-radius:16px}.field input:focus,.field textarea:focus{border-color:#d7c1cb;box-shadow:0 0 0 4px rgba(211,190,199,.13)}
+  .prompt-box{background:#62585a;color:#f7f2f1;border-radius:18px}.notice{background:#f5efe9;color:#766962;border:0;border-radius:16px}.preview{border-color:#eee5e0;border-radius:18px}.preview-head{background:#faf5f1;border-bottom-color:#eee5e0}
+  .detail-item{background:#faf6f3;border:0;border-radius:16px}.detail-item .k{color:#a0928d}.detail-item .v{color:#5f5653;font-weight:800}
+  .toast{background:#6d6062;border-radius:999px}
+
+  #roomTooltip{position:fixed;z-index:120;display:none;pointer-events:none;min-width:210px;max-width:270px;background:rgba(255,253,251,.98);border:1px solid #eadfd9;border-radius:18px;padding:12px 13px;box-shadow:0 18px 42px rgba(87,69,63,.16);color:#5f5552}
+  #roomTooltip.show{display:block}.tip-title{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;font-weight:900}.tip-type{font-size:9.5px;color:#9b8e89;margin-top:3px}.tip-rule{height:1px;background:#f0e7e2;margin:9px 0}.tip-line{display:flex;justify-content:space-between;gap:12px;font-size:10px;margin:5px 0;color:#766b67}.tip-line b{color:#5b5250}.tip-cap{margin-top:8px;border-radius:12px;padding:7px 8px;font-size:9.5px;font-weight:800}.tip-jacuzzi{font-size:9px;padding:4px 6px;border-radius:999px;background:#edf5f6;color:#66808a}
+
+  @media(max-width:1400px){.day{min-height:430px}.room-grid{grid-template-columns:repeat(5,1fr)}.pax-pill{font-size:8px}.stay-range{font-size:8.3px}}
+  @media(max-width:1000px){.dashboard{grid-template-columns:repeat(3,1fr)}.lower{grid-template-columns:1fr}.room-grid{grid-template-columns:repeat(4,1fr)}.weekdays,.calendar{min-width:1100px}.day{min-height:420px}}
+  @media(max-width:800px){.app{padding:14px}.brand{font-size:31px}.calendar-shell{overflow:auto}.room-grid{grid-template-columns:repeat(2,1fr)}.metric{padding:13px}.dashboard{grid-template-columns:repeat(2,1fr)}.guest-card{grid-template-columns:auto minmax(0,1fr)}.stay-badge{grid-column:2;justify-self:start}.pax-pill{display:none}}
+
+
+  /* ===== stay-bar calendar : 한 예약을 날짜 사이에 이어지는 하나의 바처럼 표시 ===== */
+  .calendar{display:block;background:#eee4df}
+  .calendar-week{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:#eee4df;gap:1px;overflow:hidden}
+  .calendar-week+.calendar-week{border-top:1px solid #eee4df}
+  .day-bg{position:relative;background:#fffdfb;min-width:0;cursor:pointer;padding:11px 10px;transition:.16s ease;z-index:1}
+  .day-bg:hover{background:#fff9f6}
+  .day-bg.outside{background:#fcf8f5;color:#b9ada8}
+  .day-bg.sun{background:#fffaf8}.day-bg.sat{background:#fbfcfc}
+  .day-bg.selected{box-shadow:inset 0 0 0 2px #d9beca;background:#fffafd;z-index:2}
+  .day-bg.today .date-pill{background:#8b737a;color:#fff}
+  .day-top{height:46px;display:flex;align-items:flex-start;justify-content:space-between;gap:7px}
+  .day-top .date-wrap{display:flex;align-items:center;gap:7px}
+  .day-top .date-pill{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:900;color:#645a58}
+  .day-top .today-word{font-size:8px;letter-spacing:.12em;font-weight:900;color:#9a7b86;padding-top:8px}
+  .day-top .day-count{font-size:9px;font-weight:800;color:#9d8e89;background:#f6efeb;border-radius:999px;padding:5px 7px;white-space:nowrap;margin-top:2px}
+  .day-bg.outside .day-count{opacity:.65}
+
+  .week-bars{position:absolute;left:0;right:0;top:55px;z-index:6;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:50px;row-gap:7px;padding:0 8px 14px;pointer-events:none}
+  .stay-bar{height:50px;min-width:0;margin:0 3px;pointer-events:auto;display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:18px;box-shadow:0 5px 15px rgba(103,83,76,.07),inset 0 0 0 1px rgba(255,255,255,.5);color:#584f4c;position:relative;cursor:pointer;transition:transform .16s ease,box-shadow .16s ease;overflow:hidden}
+  .stay-bar:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(96,76,69,.13),inset 0 0 0 1px rgba(255,255,255,.75);z-index:20}
+  .stay-bar.seg-left{border-top-left-radius:7px;border-bottom-left-radius:7px;margin-left:0}
+  .stay-bar.seg-right{border-top-right-radius:7px;border-bottom-right-radius:7px;margin-right:0}
+  .stay-bar.tone-0{background:#f7e4d9}.stay-bar.tone-1{background:#ede7f4}.stay-bar.tone-2{background:#e5f0f2}.stay-bar.tone-3{background:#e9f0e4}
+  .stay-bar.tone-4{background:#f5e5e9}.stay-bar.tone-5{background:#f5eddc}.stay-bar.tone-6{background:#ebe9f1}.stay-bar.tone-7{background:#e8f1ed}
+  .bar-room{flex:0 0 auto;min-width:49px;padding:7px 8px;border-radius:13px;background:rgba(255,255,255,.73);font-size:11px;font-weight:950;text-align:center;color:#5d5451;cursor:help;white-space:nowrap}
+  .bar-copy{min-width:0;display:flex;flex-direction:column;gap:2px;line-height:1.1;flex:1 1 auto}
+  .bar-name{font-size:11px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#554c49}
+  .bar-range{font-size:8.8px;font-weight:800;color:#7f716d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar-pax{flex:0 0 auto;font-size:8.5px;font-weight:900;border-radius:999px;padding:5px 7px;background:rgba(255,255,255,.66);white-space:nowrap}
+  .bar-edge{flex:0 0 auto;font-size:8px;font-weight:950;letter-spacing:.04em;border-radius:999px;padding:5px 6px;background:rgba(255,255,255,.78);white-space:nowrap}
+  .bar-edge.in{color:#a06e5f}.bar-edge.out{color:#64818a}
+  .bar-cont{flex:0 0 auto;font-size:13px;font-weight:900;color:#aa9891;line-height:1}
+  .stay-bar.compact .bar-pax{display:none}
+  .stay-bar.tiny .bar-range,.stay-bar.tiny .bar-pax{display:none}
+  .stay-bar.tiny .bar-copy{max-width:80px}
+  .stay-bar.note-bar{background:#f7edd8;color:#7d6849;border:1px dashed rgba(170,139,93,.28);box-shadow:none}
+  .note-heart{font-size:12px}.note-text{font-size:9px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .week-empty-hint{position:absolute;left:10px;bottom:12px;color:#c3b8b3;font-size:9px;font-weight:700}
+
+  .bar-legend{display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap;margin:0 2px 14px;padding:9px 12px;color:#887b77;font-size:10px;font-weight:750}
+  .bar-legend b{color:#655b58}.bar-swatch{width:26px;height:10px;border-radius:999px;display:inline-block;vertical-align:-1px;margin-right:5px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.6)}
+  .bar-swatch.one{background:#f7e4d9}.bar-swatch.two{background:#ede7f4}.bar-swatch.three{background:#e5f0f2}
+
+  @media(max-width:1100px){
+    .weekdays,.calendar{min-width:1180px}
+    .calendar-shell{overflow:auto}
+    .bar-pax{display:none}
+  }
+
+
+
+  /* ===== 13객실 기준 월간 IN~OUT 예약 바 ===== */
+  .calendar-shell .weekdays{display:none}
+  .calendar{display:block;background:#fffdfb}
+  .scheduler-scroll{overflow:auto;max-height:72vh;background:#fffdfb;scrollbar-color:#d8cbc5 #f7f0ec;scrollbar-width:thin;position:relative}
+  .scheduler-head,.scheduler-row{display:grid;grid-template-columns:var(--roomw) repeat(var(--days),var(--dayw));position:relative}
+  .scheduler-head{height:58px;position:sticky;top:0;z-index:30;background:#fbf5f1;border-bottom:1px solid #d9cdc7}
+  .scheduler-corner{grid-column:1;position:sticky;left:0;z-index:35;background:#f6ece7;border-right:1px solid #d7c8c1;display:flex;flex-direction:column;justify-content:center;padding:0 14px;color:#5c4e49}
+  .scheduler-corner b{font-size:13px;letter-spacing:-.3px}.scheduler-corner span{font-size:8px;color:#aa9186;margin-top:3px;font-weight:800;letter-spacing:.04em}
+  .scheduler-date{grid-row:1;border:0;border-right:1px solid #eadfda;background:#fbf7f4;color:#776a65;display:flex;align-items:center;justify-content:center;gap:5px;position:relative;padding:0;min-width:0}
+  .scheduler-date:hover{background:#f7efea}.scheduler-date.selected{background:#f3e4e8;box-shadow:inset 0 -3px 0 #b98a96}.scheduler-date.today{background:#f0e3e6}
+  .scheduler-date.sun{color:#b4645d}.scheduler-date.sat{color:#587d8c}.scheduler-date .sd-day{font-size:15px;font-weight:900}.scheduler-date .sd-week{font-size:9px;font-weight:800;opacity:.75}
+  .scheduler-date i{position:absolute;bottom:5px;font-size:6.5px;font-style:normal;letter-spacing:.1em;color:#9e6f79;font-weight:900}
+  .scheduler-row{height:76px;border-bottom:1px solid #e7ddd8;background:#fff}
+  .scheduler-row.floor-start{border-top:5px solid #f4ebe6;height:81px}
+  .scheduler-room{grid-column:1;grid-row:1;position:sticky;left:0;z-index:20;background:#fff9f5;border-right:1px solid #d9cbc4;padding:9px 12px;cursor:help;text-align:left;box-shadow:7px 0 16px rgba(95,72,63,.035)}
+  .scheduler-row:nth-child(even) .scheduler-room{background:#fdf8f4}
+  .sr-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.sr-top strong{font-size:15px;color:#473c38;font-weight:950}.sr-top span{font-size:8px;color:#b0988e;font-weight:900}
+  .sr-type{font-size:9.5px;color:#665955;font-weight:850;margin-top:2px}.sr-cap{font-size:8px;color:#a08e87;margin-top:5px;font-weight:750}
+  .scheduler-cell{grid-row:1;border:0;border-right:1px solid #ece3de;background:#fff;min-width:0;position:relative;padding:0;color:#c0b5b0;display:grid;place-items:center}
+  .scheduler-cell:nth-of-type(even){background:#fffdfc}.scheduler-cell:hover{background:#fff9f4}.scheduler-cell.selected{box-shadow:inset 2px 0 0 rgba(185,138,150,.32),inset -2px 0 0 rgba(185,138,150,.32)}
+  .scheduler-cell.today{background:#fffaf7}.scheduler-cell.occupied .vacant-text{display:none}.scheduler-cell.blocked{background:#fffbe8}
+  .vacant-text{font-size:8px;font-weight:800;color:#c7bbb6;letter-spacing:.02em}.block-mini{font-size:7.5px;font-weight:900;color:#9d7a2c;background:#fff4b9;padding:4px 5px;border-radius:7px}
+  .occupancy-bar{grid-row:1;z-index:8;height:58px;align-self:center;margin:0 3px;display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:13px;min-width:0;overflow:visible;cursor:pointer;box-shadow:0 4px 12px rgba(75,58,52,.065),inset 0 0 0 1px rgba(255,255,255,.72);color:#463d39;position:relative;transition:.16s ease}
+  .occupancy-bar.dimmed{opacity:.13;filter:saturate(.45)}.occupancy-bar:hover{transform:translateY(-1px);z-index:15;box-shadow:0 9px 22px rgba(75,58,52,.13),inset 0 0 0 1px rgba(255,255,255,.85)}
+  .occupancy-bar.starts-here{border-left:5px solid var(--accent);border-top-left-radius:17px;border-bottom-left-radius:17px}.occupancy-bar.ends-here{border-right:4px solid var(--out-accent)}
+  .guest-tone-0{background:#dcebd4;--accent:#6e9a61;--out-accent:#7a9db1}.guest-tone-1{background:#f8dfcc;--accent:#cf7d59;--out-accent:#7a9db1}.guest-tone-2{background:#dce8f3;--accent:#6f91b0;--out-accent:#7a9db1}.guest-tone-3{background:#fff4ad;--accent:#c9a63c;--out-accent:#7a9db1}.guest-tone-4{background:#e9e1f1;--accent:#927aac;--out-accent:#7a9db1}.guest-tone-5{background:#dceee8;--accent:#6f9c8b;--out-accent:#7a9db1}
+  .occ-edge{flex:0 0 auto;font-size:8px;font-weight:950;border-radius:7px;padding:5px 6px;white-space:nowrap;background:rgba(255,255,255,.78)}.occ-in{color:#b64d39}.occ-out{color:#476f87}.occ-turn{color:#7a5a00;background:#fff26a;box-shadow:inset 0 0 0 1px rgba(181,150,0,.14)}
+  .occ-main{min-width:0;display:flex;flex-direction:column;gap:3px;flex:1}.occ-main b{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#453b37}.occ-main small{font-size:8px;font-weight:800;color:#756761;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .occ-more{font-size:15px;color:#9c8d87;font-weight:950}.occupancy-bar.one-night .occ-main small{display:none}.occupancy-bar.short .occ-edge.occ-out{font-size:0}.occupancy-bar.short .occ-edge.occ-out:after{content:'OUT';font-size:8px}
+  .bar-legend{background:#fffaf6;border-radius:15px;margin-bottom:13px}.bar-legend .bar-swatch{border:1px solid rgba(95,75,66,.06)}
+  .bar-swatch.one{background:#dcebd4}.bar-swatch.two{background:#f8dfcc}.bar-swatch.three{background:#dce8f3}.bar-swatch.vac{background:#fff;border:1px solid #ded2cc}
+  @media(max-width:900px){.scheduler-scroll{max-height:70vh}.scheduler-head,.scheduler-row{grid-template-columns:138px repeat(var(--days),84px)}.scheduler-room{padding:8px 10px}.occupancy-bar{height:56px}.occ-main small{display:none}}
+
+
+
+  /* ===== latest: date picker + breakfast + continuous carousel + OUT/IN event cells ===== */
+  .controlbar{grid-template-columns:minmax(520px,auto) minmax(260px,1fr) auto}
+  .month-nav{flex-wrap:wrap;row-gap:7px}
+  .quick-date-wrap{display:inline-flex;align-items:center;gap:7px;background:#fffaf7;border:1px solid #eadfd9;border-radius:999px;padding:5px 8px 5px 11px;color:#786c68;font-size:10px;font-weight:850;box-shadow:0 4px 12px rgba(92,72,64,.04)}
+  .quick-date-wrap span{white-space:nowrap}
+  .quick-date{border:0;background:transparent;color:#5d5250;font-weight:850;font-size:11px;outline:none;min-width:120px}
+  .quick-date::-webkit-calendar-picker-indicator{opacity:.65;cursor:pointer}
+  .breakfast-btn{background:#fff1c9!important;border-color:#f0dfaa!important;color:#7c6321!important;box-shadow:0 4px 12px rgba(133,103,29,.05)!important}
+  .breakfast-btn:hover{background:#ffedb3!important}
+
+  .scheduler-scroll{max-height:74vh;scroll-behavior:smooth;overscroll-behavior-inline:contain}
+  .scheduler-head,.scheduler-row{grid-template-columns:var(--roomw) repeat(var(--days),var(--dayw))}
+  .scheduler-date.month-start{border-left:3px solid #c8b7b0;background:#f8f0ec}
+  .scheduler-date .sd-month{position:absolute;left:5px;top:4px;font-size:7px;font-weight:950;color:#9c746a;background:#fff7f2;border-radius:999px;padding:2px 5px;letter-spacing:0}
+  .scheduler-cell.month-start{border-left:3px solid #c8b7b0}
+
+  /* IN / OUT 이벤트는 날짜칸 전체를 칠하지 않고, 고객 바와 이어지는 작은 카드로 표시 */
+  .scheduler-cell.event-day{z-index:9;background:#fff!important;color:#5c504c}
+  .scheduler-cell.event-day:hover{background:#fffaf7!important}
+  .scheduler-cell.turnover-day{background:#fff!important}
+  .event-box{position:absolute;inset:6px;z-index:18;border-radius:12px;border:1px solid rgba(111,91,82,.10);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px 5px;box-shadow:0 3px 9px rgba(70,57,52,.07);pointer-events:none;text-align:center;overflow:hidden}
+  .event-box b{font-size:9px;font-weight:1000;line-height:1;letter-spacing:.01em;white-space:nowrap}
+  .event-box small{font-size:7px;font-weight:850;color:#584f4d;line-height:1.12;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .event-box.event-in b{color:#c75140}.event-box.event-out b{color:#4d7288}
+
+  /* 같은 날짜에 기존 고객 OUT + 새 고객 IN이면 '한 네모' 안에 위/아래 두 줄로 연결 */
+  .turnover-box{position:absolute;inset:4px;z-index:19;border-radius:13px;overflow:hidden;border:1px solid rgba(89,72,64,.12);box-shadow:0 4px 12px rgba(74,58,52,.08);display:grid;grid-template-rows:1fr 1fr;pointer-events:none;background:#fff}
+  .turnover-line{min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:5px;padding:4px 6px;color:#4d433f}
+  .turnover-line+ .turnover-line{border-top:1px solid rgba(255,255,255,.85)}
+  .turnover-line .turn-label{font-size:7.5px;font-weight:1000;background:rgba(255,255,255,.84);border-radius:7px;padding:3px 4px;white-space:nowrap;box-shadow:inset 0 0 0 1px rgba(91,72,64,.06)}
+  .turnover-line.outgoing .turn-label{color:#4e7288}.turnover-line.incoming .turn-label{color:#c34c3c}
+  .turnover-line .turn-name{font-size:7.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+  .turnover-line .turn-edge{position:absolute;width:5px;top:0;bottom:50%;right:0;background:rgba(79,113,132,.42)}
+  .turnover-line.incoming:before{content:'';position:absolute;left:0;bottom:0;height:50%;width:5px;background:rgba(194,78,61,.45)}
+  .event-tone-0{background:#dcebd4}.event-tone-1{background:#f8dfcc}.event-tone-2{background:#dce8f3}.event-tone-3{background:#fff4ad}.event-tone-4{background:#e9e1f1}.event-tone-5{background:#dceee8}
+
+  /* 예약바는 이벤트 박스 아래로 이어져 한 고객의 체류 흐름을 유지 */
+  .occupancy-bar{z-index:8}
+  .occupancy-bar.starts-on-event{padding-left:calc(var(--dayw) - 2px)}
+  .occupancy-bar.starts-on-event .occ-edge:first-child{display:none}
+  .occupancy-bar.starts-on-event.one-night{padding-left:0;opacity:.18}
+  .occupancy-bar.ends-on-event .occ-edge.occ-out{display:none}
+
+  .breakfast-list{display:flex;flex-direction:column;gap:8px}
+  .breakfast-row{display:grid;grid-template-columns:64px minmax(130px,1fr) auto auto;gap:10px;align-items:center;padding:10px 12px;border-radius:15px;background:#faf6f2}
+  .breakfast-room{font-size:13px;font-weight:950;color:#554b48}.breakfast-name{font-size:11px;font-weight:850;color:#5c514e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .breakfast-meta{font-size:9px;color:#8f817c;margin-top:3px}.breakfast-state{font-size:9px;font-weight:900;padding:5px 7px;border-radius:999px;background:#e8eef6;color:#5c7388;white-space:nowrap}
+  .breakfast-info{font-size:9px;font-weight:850;color:#7e6b34;background:#fff1c9;padding:5px 7px;border-radius:999px;white-space:nowrap}
+  .breakfast-empty{padding:24px;border-radius:18px;background:#faf6f2;color:#948783;text-align:center;font-size:11px;font-weight:750}
+
+  @media(max-width:1250px){
+    .controlbar{grid-template-columns:1fr}.search{max-width:none;justify-self:stretch}.view-toggle{justify-self:start}
+  }
+  @media(max-width:760px){
+    .quick-date-wrap{width:100%;justify-content:space-between}.quick-date{min-width:0;flex:1}.breakfast-btn{width:100%}
+  }
+
+
+  /* ===== daily sheet archive + lunch reservations ===== */
+  .meal-actions{display:inline-flex;gap:7px;align-items:center}
+  .lunch-btn{background:#e7f0e4!important;border-color:#d2e2ce!important;color:#5f7659!important;box-shadow:0 4px 12px rgba(92,120,82,.05)!important}
+  .lunch-btn:hover{background:#dcebd8!important}
+  .record-btn{background:#f2e9f1!important;border-color:#e4d7e2!important;color:#765f71!important}
+
+  .prompt-editor{width:100%;min-height:250px;resize:vertical;border:1px solid #e5d9d5;border-radius:18px;background:#62585a;color:#f8f4f2;padding:15px 16px;font:11px/1.62 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;outline:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+  .prompt-editor[readonly]{cursor:default;opacity:.96}
+  .prompt-editor:not([readonly]){background:#fffaf7;color:#5f5552;border-color:#d8c2cc;box-shadow:0 0 0 4px rgba(211,190,199,.13)}
+  .prompt-save-state{font-size:9.5px;font-weight:800;color:#9a8b86;padding:6px 9px;border-radius:999px;background:#f7f0ec}
+  .record-panel{margin-top:16px;padding:14px;border-radius:20px;background:#faf6f3;border:1px solid #efe4de}
+  .record-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .record-panel-title{font-size:12px;font-weight:900;color:#5e5350}.record-panel-sub{font-size:9px;color:#a0938e;margin-top:2px}
+  .sheet-history{display:flex;flex-direction:column;gap:7px;max-height:230px;overflow:auto;padding-right:2px}
+  .history-item{display:grid;grid-template-columns:minmax(115px,.8fr) minmax(0,1.8fr) auto;gap:9px;align-items:center;padding:10px 11px;border-radius:15px;background:#fffdfb;box-shadow:inset 0 0 0 1px #eee4df}
+  .history-date{font-size:11px;font-weight:950;color:#5d514e}.history-date small{display:block;font-size:8px;color:#a0938d;font-weight:700;margin-top:2px}
+  .history-meta{font-size:9px;color:#837671;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .history-actions{display:flex;gap:5px}.history-actions button{border:0;border-radius:999px;padding:6px 8px;font-size:8.5px;font-weight:900;cursor:pointer;background:#f2e9e5;color:#766662}.history-actions .edit-record{background:#ede6f1;color:#6f6078}
+  .history-empty{padding:17px;text-align:center;color:#a49792;font-size:10px;background:#fffdfb;border-radius:14px}
+
+  .lunch-modal{width:min(940px,100%)}
+  .lunch-layout{display:grid;grid-template-columns:330px minmax(0,1fr);gap:16px}
+  .lunch-form{background:#faf6f2;border-radius:20px;padding:14px;align-self:start}
+  .lunch-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .lunch-field{min-width:0}.lunch-field.full{grid-column:1/-1}.lunch-field label{display:block;font-size:9px;font-weight:900;color:#847672;margin-bottom:5px}
+  .lunch-field input,.lunch-field select,.lunch-field textarea{width:100%;border:1px solid #eadfd9;background:#fffdfb;color:#5e5451;border-radius:12px;padding:9px 10px;outline:none;font-size:10px}
+  .lunch-field textarea{min-height:68px;resize:vertical}.lunch-field input:focus,.lunch-field select:focus,.lunch-field textarea:focus{border-color:#cfc1bb;box-shadow:0 0 0 3px rgba(202,183,175,.10)}
+  .time-pair{display:grid;grid-template-columns:1fr auto 1fr;gap:5px;align-items:center}.time-pair span{font-size:9px;color:#a1918c}
+  .confirm-toggle{display:flex;gap:6px}.confirm-toggle label{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;border-radius:11px;padding:8px 6px;background:#fffdfb;border:1px solid #eadfd9;cursor:pointer;font-size:9px;font-weight:900}.confirm-toggle input{width:auto;accent-color:#7b9870}
+  .lunch-save-row{display:flex;gap:7px;margin-top:11px}.lunch-save-row .btn{flex:1;justify-content:center}
+  .lunch-list-wrap{min-width:0}.lunch-datebar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.lunch-datebar input{border:1px solid #eadfd9;background:#fffaf7;color:#5d5250;border-radius:999px;padding:8px 11px;font-size:10px;font-weight:800}
+  .lunch-list{display:flex;flex-direction:column;gap:8px;max-height:520px;overflow:auto;padding-right:2px}
+  .lunch-card{border-radius:17px;padding:12px 13px;background:#fffdfb;box-shadow:inset 0 0 0 1px #eee4df;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:start}
+  .lunch-source{font-size:8.5px;font-weight:950;padding:5px 7px;border-radius:999px;background:#e8f0e5;color:#63785d;white-space:nowrap}.source-phone{background:#e7eef5;color:#61778b}.source-friend{background:#f1e8f1;color:#796579}.source-walkin{background:#f7eadb;color:#8a704f}.source-other{background:#f1ece8;color:#7b6d68}
+  .lunch-main{min-width:0}.lunch-name{font-size:12px;font-weight:950;color:#554b48}.lunch-summary{font-size:10px;font-weight:850;color:#766965;margin-top:4px;line-height:1.45}.lunch-menu{font-size:9px;color:#91827d;margin-top:5px;white-space:pre-wrap;word-break:break-word}
+  .lunch-confirm{font-size:8.5px;font-weight:950;padding:5px 7px;border-radius:999px;background:#edf4e9;color:#607a58;white-space:nowrap}.lunch-confirm.pending{background:#fff0d8;color:#967044}
+  .lunch-card-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:5px;margin-top:2px}.lunch-card-actions button{border:0;border-radius:999px;padding:5px 8px;font-size:8px;font-weight:900;background:#f2ece8;color:#7d6f69;cursor:pointer}.lunch-card-actions .delete-lunch{color:#a66b6b;background:#fff0ef}
+  .lunch-empty{padding:32px 18px;border-radius:18px;background:#faf6f2;text-align:center;color:#9a8d88;font-size:10px}
+
+  @media(max-width:900px){.lunch-layout{grid-template-columns:1fr}.lunch-list{max-height:330px}.history-item{grid-template-columns:1fr auto}.history-meta{grid-column:1/-1;grid-row:2}.meal-actions{width:100%}.meal-actions .btn{flex:1}}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand-wrap">
+      <div class="logo">to</div>
+      <div>
+        <div class="brand">toyou</div>
+        <div class="subtitle">13개 객실의 IN부터 OUT까지 한 줄로 보는 월간 캘린더</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn soft" id="openImport">✦ 예약시트 가져오기</button>
+      <button class="btn" id="exportBtn">JSON 백업</button>
+      <button class="btn" id="resetBtn">처음 데이터로</button>
+    </div>
+  </div>
+
+  <div class="controlbar">
+    <div class="month-nav">
+      <button class="iconbtn" id="prevMonth" aria-label="이전 달">‹</button>
+      <div class="month-title" id="monthTitle"></div>
+      <button class="iconbtn" id="nextMonth" aria-label="다음 달">›</button>
+      <button class="btn small" id="todayBtn">오늘</button>
+      <label class="quick-date-wrap"><span>날짜 선택</span><input type="date" id="quickDate" class="quick-date" value="2026-09-01" /></label>
+      <span class="meal-actions"><button class="btn small breakfast-btn" id="breakfastBtn">조식예약 보기</button><button class="btn small lunch-btn" id="lunchBtn">중식 예약현황</button></span>
+    </div>
+    <div class="search"><input id="searchInput" placeholder="객실 · 고객명 · 연락처 · 메모 검색" /></div>
+    <div class="view-toggle">
+      <button class="active" data-view="calendar">13객실 월간표</button>
+      <button data-view="timeline">간단 흐름표</button>
+    </div>
+  </div>
+
+  <div class="dashboard" id="metrics"></div>
+
+  <div class="bar-legend" aria-label="예약바 안내">
+    <span><i class="bar-swatch one"></i><b>같은 객실의 한 고객 = IN~OUT 한 줄</b></span>
+    <span><i class="bar-swatch two"></i>새 IN 고객은 직전 예약과 다른 색</span>
+    <span><i class="bar-swatch three"></i>IN/OUT 날짜 = <b style="color:#e23a3a">푸른칸 + 빨간글씨</b></span>
+    <span>같은 날 OUT+IN이면 <b style="color:#7c655e">한 네모 안에 위 OUT · 아래 IN</b></span>
+    <span><i class="bar-swatch vac"></i>흰칸은 <b>공실</b></span>
+    <span>↔ 월 경계를 끊김 없이 가로 스크롤</span>
+    <span>💧 자쿠지 · 호실 호버시 기준/최대인원</span>
+  </div>
+
+  <section class="calendar-shell" id="calendarShell">
+    <div class="weekdays">
+      <div class="weekday sun">일</div><div class="weekday">월</div><div class="weekday">화</div><div class="weekday">수</div><div class="weekday">목</div><div class="weekday">금</div><div class="weekday sat">토</div>
+    </div>
+    <div class="calendar" id="calendar"></div>
+  </section>
+
+  <section class="timeline" id="timeline"></section>
+
+  <div class="lower">
+    <section class="panel">
+      <div class="panel-head">
+        <div><div class="panel-title" id="roomPanelTitle">선택일 객실판</div><div class="panel-sub">색만 봐도 오늘의 체크인 · 연박 · 체크아웃 · 공실을 알 수 있어요</div></div>
+        <button class="btn small" id="jumpSelected">선택한 날짜 보기</button>
+      </div>
+      <div class="room-grid" id="roomGrid"></div>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><div><div class="panel-title">이번 달 예약 채널</div><div class="panel-sub" id="sourceSub">이번 달 예약을 가볍게 요약했어요</div></div></div>
+      <div class="source-list" id="sourceList"></div>
+      <div class="legend">
+        <span>IN · OUT은 고객색으로 연결</span><span>OUT / IN · 한 네모 안 두 줄</span><span>연박 · 고객별 컬러바</span><span>흰칸 · 공실</span><span>💧 · 자쿠지</span>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="importModal">
+  <div class="modal">
+    <div class="modal-head"><div><div class="modal-title">일일 예약시트 입력</div><div class="panel-sub">이미지를 먼저 글로 정확하게 해석한 뒤, 그 결과를 JSON으로 변환해 캘린더에 반영하는 2단계 방식입니다.</div></div><button class="close" data-close="importModal">×</button></div>
+    <div class="modal-body">
+      <div class="steps">
+        <div class="step"><b>1 · 이미지 해석</b>영문 프롬프트를 복사해 일일 예약시트 이미지와 함께 붙여넣습니다.</div>
+        <div class="step"><b>2 · JSON에게 명령하기</b>받은 글 설명을 붙여넣고 JSON 변환 명령을 복사합니다.</div>
+        <div class="step"><b>3 · 사이트 반영</b>완성된 JSON을 붙여넣고 미리보기 후 저장합니다.</div>
+      </div>
+      <div class="field"><label>시트 기준일</label><input type="date" id="sheetDate" value="2026-09-01" /></div>
+
+      <div class="field"><label>① 이미지와 함께 붙여넣을 영문 해석 프롬프트</label><textarea class="prompt-editor" id="promptEditor" readonly></textarea></div>
+      <div class="modal-actions" style="margin-top:0;justify-content:space-between;align-items:center">
+        <span class="prompt-save-state" id="promptSaveState">아직 저장되지 않음</span>
+        <span style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn" id="editPrompt">수정</button><button class="btn soft" id="savePrompt">저장</button><button class="btn" id="copyPrompt">영문 프롬프트 복사</button></span>
+      </div>
+
+      <div class="field"><label>② 이미지 해석 결과 붙여넣기</label><textarea id="analysisResult" placeholder="이미지와 위 영문 프롬프트를 함께 보낸 뒤 받은 객실별 글 설명을 그대로 붙여넣으세요."></textarea></div>
+      <div class="modal-actions" style="margin-top:0;justify-content:flex-end"><button class="btn" id="saveAnalysisResult">해석 결과 중간 저장</button></div>
+
+      <div class="field"><label>③ JSON에게 명령하기</label><textarea class="prompt-editor" id="jsonCommandEditor" readonly placeholder="위의 이미지 해석 결과를 붙여넣으면 JSON 변환 명령이 자동으로 만들어집니다."></textarea></div>
+      <div class="modal-actions" style="margin-top:0;justify-content:flex-end"><button class="btn soft" id="copyJsonCommand">JSON 변환 명령 복사</button></div>
+
+      <div class="field"><label>④ 완성된 JSON 붙여넣기</label><textarea id="jsonInput" placeholder='예: {"sheet_date":"2026-09-01","reservations":[...]}'></textarea></div>
+      <div class="notice">이 방식은 첫 단계에서 이미지를 사람이 읽듯 글로 풀어 확인하고, 두 번째 단계에서 그 글만 JSON으로 바꾸기 때문에 잘못 읽은 부분을 중간에 직접 수정할 수 있습니다. 날짜별 해석 결과와 JSON은 각각 저장 기록에 남습니다.</div>
+      <div class="preview" id="preview"><div class="preview-head" id="previewHead"></div><div class="preview-list" id="previewList"></div></div>
+      <div class="modal-actions"><button class="btn" id="previewBtn">미리보기</button><button class="btn primary" id="applyImport" disabled>저장하고 캘린더에 반영</button></div>
+      <div class="record-panel">
+        <div class="record-panel-head"><div><div class="record-panel-title">날짜별 저장 기록</div><div class="record-panel-sub">다음날 시트를 넣어도 이전 날짜 기록은 그대로 남습니다.</div></div><button class="btn small record-btn" id="refreshHistory">기록 새로고침</button></div>
+        <div class="sheet-history" id="sheetHistory"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="detailModal">
+  <div class="modal" style="width:min(720px,100%)">
+    <div class="modal-head"><div class="modal-title" id="detailTitle">예약 상세</div><button class="close" data-close="detailModal">×</button></div>
+    <div class="modal-body"><div class="detail-grid" id="detailGrid"></div></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="breakfastModal">
+  <div class="modal" style="width:min(760px,100%)">
+    <div class="modal-head"><div><div class="modal-title" id="breakfastTitle">조식예약 보기</div><div class="panel-sub">선택한 날짜에 투숙 중인 객실의 조식 입력 현황</div></div><button class="close" data-close="breakfastModal">×</button></div>
+    <div class="modal-body"><div class="breakfast-list" id="breakfastList"></div></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="lunchModal">
+  <div class="modal lunch-modal">
+    <div class="modal-head"><div><div class="modal-title" id="lunchTitle">중식 예약현황</div><div class="panel-sub">네이버 스마트플레이스 · 전화 · 지인 · 현장 · 기타 예약을 날짜별로 따로 저장합니다.</div></div><button class="close" data-close="lunchModal">×</button></div>
+    <div class="modal-body">
+      <div class="lunch-layout">
+        <div class="lunch-form">
+          <div class="panel-title" style="font-size:14px;margin-bottom:10px" id="lunchFormTitle">중식 예약 추가</div>
+          <input type="hidden" id="lunchEditId" />
+          <div class="lunch-form-grid">
+            <div class="lunch-field full"><label>예약일</label><input type="date" id="lunchDate" /></div>
+            <div class="lunch-field full"><label>예약 경로</label><select id="lunchSource"><option>네이버 스마트플레이스</option><option>전화예약</option><option>지인예약</option><option>현장예약</option><option>기타</option></select></div>
+            <div class="lunch-field"><label>예약자명</label><input id="lunchName" placeholder="예: 김지연" /></div>
+            <div class="lunch-field"><label>연락처</label><input id="lunchPhone" placeholder="선택 입력" /></div>
+            <div class="lunch-field"><label>인원</label><input type="number" min="1" id="lunchPax" placeholder="2" /></div>
+            <div class="lunch-field"><label>예약 확정</label><div class="confirm-toggle"><label><input type="checkbox" id="lunchConfirmed" /> 예약확정 완료</label></div></div>
+            <div class="lunch-field full"><label>이용 시간</label><div class="time-pair"><input type="time" id="lunchStart" /><span>~</span><input type="time" id="lunchEnd" /></div></div>
+            <div class="lunch-field full"><label>메뉴 선택 / 주문 내용</label><textarea id="lunchMenu" placeholder="예: 전복 톳밥 2 · 전복죽 1"></textarea></div>
+            <div class="lunch-field full"><label>메모</label><textarea id="lunchNote" placeholder="알레르기, 좌석, 지인명 등 필요한 메모"></textarea></div>
+          </div>
+          <div class="lunch-save-row"><button class="btn" id="cancelLunchEdit" type="button">새로 작성</button><button class="btn primary" id="saveLunch" type="button">중식 예약 저장</button></div>
+        </div>
+        <div class="lunch-list-wrap">
+          <div class="lunch-datebar"><div><div class="panel-title" style="font-size:14px">예약 목록</div><div class="panel-sub" id="lunchCountText">0건</div></div><input type="date" id="lunchListDate" /></div>
+          <div class="lunch-list" id="lunchList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="roomTooltip" role="tooltip"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const ROOMS = [
+    {room:'101',type:'패밀리 스위트',base:4,max:12,jacuzzi:false},{room:'102',type:'패밀리',base:4,max:10,jacuzzi:false},
+    {room:'201',type:'프리미어',base:4,max:6,jacuzzi:true},{room:'202',type:'스탠다드',base:2,max:3,jacuzzi:false},{room:'203',type:'프리미어',base:4,max:6,jacuzzi:true},{room:'204',type:'프리미어 킹',base:4,max:7,jacuzzi:true},{room:'205',type:'디럭스',base:4,max:5,jacuzzi:true},
+    {room:'301',type:'프리미어',base:4,max:6,jacuzzi:true},{room:'302',type:'스탠다드',base:2,max:3,jacuzzi:false},{room:'303',type:'프리미어',base:4,max:6,jacuzzi:true},{room:'304',type:'디럭스',base:4,max:5,jacuzzi:true},{room:'305',type:'디럭스',base:4,max:5,jacuzzi:true},
+    {room:'401',type:'프리미어 트리플',base:4,max:10,jacuzzi:true}
+  ];
+  const ROOM_TYPE = Object.fromEntries(ROOMS.map(x=>[x.room,x.type]));
+  const ROOM_META = Object.fromEntries(ROOMS.map(x=>[x.room,x]));
+  const STORAGE_KEY = 'toyou_data_v4';
+
+  const seedData = {
+    reservations:[
+      {id:'r202-nils',room:'202',room_type:'스탠다드',guest_name:'Nils Ückerseifer',nationality:'독일',source:'부킹닷컴',handler:'매니저',booking_date:'2026-07-25',guest_count:'1',check_in:'2026-08-30',check_out:'2026-09-02',phone:'49-160-90980251',note:'시트 표기: 3박 / 49.3',reported_nights:3},
+      {id:'r302-kim',room:'302',room_type:'스탠다드',guest_name:'김건우',nationality:'',source:'트립닷컴',handler:'지배인',booking_date:'2026-08-03',guest_count:'2',check_in:'2026-08-28',check_out:'2026-08-31',phone:'010-2671-6968',note:'시트 표기: 3박 / 64.3',reported_nights:3,parking:'도보'},
+      {id:'r302-pei',room:'302',room_type:'스탠다드',guest_name:'PEI YU CHIANG',nationality:'중국 · 9/1 시트에는 미국 표기',source:'야놀자',handler:'매니저',booking_date:'2026-08-12',guest_count:'2',check_in:'2026-08-31',check_out:'2026-09-02',phone:'098-818-2986',note:'시트 표기: 2박 / 24.5',reported_nights:2,parking:'도보'},
+      {id:'r205-jang',room:'205',room_type:'디럭스',guest_name:'장영록',nationality:'',source:'야놀자(PK)',handler:'매니저',booking_date:'2026-08-30',guest_count:'2',check_in:'2026-08-30',check_out:'2026-08-31',phone:'010-5531-9157',note:'시트 표기: 22'},
+      {id:'r205-oh',room:'205',room_type:'디럭스',guest_name:'오정아',nationality:'',source:'야놀자',handler:'최일용',booking_date:'2026-08-30',guest_count:'2+2',check_in:'2026-08-31',check_out:'2026-09-02',phone:'010-9698-7777',note:'스탠다드 → 디럭스 / 시트 표기 2박 31.8',reported_nights:2,parking:'143도 3042'},
+      {id:'r304-jung',room:'304',room_type:'디럭스',guest_name:'EUNSUK CHUNG · 정은숙',nationality:'',source:'익스피디아',handler:'김은진',booking_date:'2026-08-21',guest_count:'3+1',check_in:'2026-08-30',check_out:'2026-08-31',phone:'010-4723-3067',note:'시트 표기: 19.2',parking:'도보'},
+      {id:'r304-kang',room:'304',room_type:'디럭스',guest_name:'강종원',nationality:'',source:'야놀자',handler:'매니저',booking_date:'2026-08-23',guest_count:'1',check_in:'2026-09-01',check_out:'2026-09-02',phone:'0507-0419-6587',note:'스탠다드 → 디럭스 / 16.9'},
+      {id:'r305-seo',room:'305',room_type:'디럭스',guest_name:'서정진',nationality:'',source:'야놀자',handler:'지배인',booking_date:'2026-08-19',guest_count:'2+2',check_in:'2026-08-30',check_out:'2026-08-31',phone:'010-5023-8684',note:'시트 표기: 19.9',parking:'63도4029'},
+      {id:'r305-choi',room:'305',room_type:'디럭스',guest_name:'최태환',nationality:'',source:'트립닷컴',handler:'지배인',booking_date:'2026-08-30',guest_count:'3',check_in:'2026-08-31',check_out:'2026-09-01',phone:'010-4305-2926',note:'시트 표기: 15.1',parking:'37버5490'},
+      {id:'r305-sim',room:'305',room_type:'디럭스',guest_name:'심용선',nationality:'',source:'야놀자',handler:'지배인',booking_date:'2026-08-26',guest_count:'1+',check_in:'2026-09-01',check_out:'2026-09-02',phone:'0503-5104-4298',note:'스탠다드 → 디럭스 / 16.9'},
+      {id:'r201-hang',room:'201',room_type:'프리미어',guest_name:'Hang Jian Soo',nationality:'',source:'부킹닷컴',handler:'최일용',booking_date:'2026-08-11',guest_count:'1',check_in:'2026-08-26',check_out:'2026-09-01',phone:'65-9231-7756',note:'시트 표기 5박/200.9. 일일 시트 간 OUT 날짜가 8/31↔9/1로 달라 최신 화면 기준 9/1 반영.',reported_nights:5,parking:'도보'},
+      {id:'r201-yang',room:'201',room_type:'프리미어',guest_name:'양규린',nationality:'',source:'익스피디아',handler:'김정민',booking_date:'2026-08-29',guest_count:'3',check_in:'2026-09-01',check_out:'2026-09-03',phone:'',note:'디럭스 → 프리 업글 · 리뷰 요청 / 시트 표기 2박/40.4',reported_nights:2},
+      {id:'r203-young',room:'203',room_type:'프리미어',guest_name:'YOUNG JEE KIM · 김영재',nationality:'',source:'익스피디아',handler:'김정민',booking_date:'2026-08-27',guest_count:'4',check_in:'2026-08-30',check_out:'2026-08-31',phone:'010-3920-4338',note:'시트 표기: 29.2',parking:'8353'},
+      {id:'r203-alianna',room:'203',room_type:'프리미어',guest_name:'ALIANNA PEREZ',nationality:'미국',source:'아고다',handler:'최일용',booking_date:'2026-08-29',guest_count:'2',check_in:'2026-08-31',check_out:'2026-09-05',phone:'948-203-8807',note:'시트 표기: 5박 / 124.5 · 미국 롱오리지마마 / 하루 조식 무료 제공 · 점심 단품메뉴 2개 무료 제공 · 구글 리뷰 부탁',reported_nights:5,parking:'도보'},
+      {id:'r301-kim',room:'301',room_type:'프리미어',guest_name:'김기영',nationality:'',source:'야놀자(PK)',handler:'박주임',booking_date:'2026-07-01',guest_count:'4',check_in:'2026-08-30',check_out:'2026-09-01',phone:'0507-0174-0043',note:'메모 · 블럭 / 시트 표기 2박 44.2',reported_nights:2,parking:'1338'},
+      {id:'r303-seo',room:'303',room_type:'프리미어',guest_name:'서성민',nationality:'',source:'야놀자',handler:'지배인',booking_date:'2026-08-30',guest_count:'2+2',check_in:'2026-08-30',check_out:'2026-08-31',phone:'010-9515-5509',note:'패밀리 → 프리 · 자쿠지컴플',parking:'3578'},
+      {id:'r204-choi',room:'204',room_type:'프리미어 킹',guest_name:'최미애',nationality:'',source:'야놀자(PK)',handler:'지배인',booking_date:'2026-07-15',guest_count:'5',check_in:'2026-08-30',check_out:'2026-08-31',phone:'010-8308-6825',note:'시트 표기: 34',parking:'158다5004'},
+      {id:'r204-hu',room:'204',room_type:'프리미어 킹',guest_name:'후린관',nationality:'',source:'야놀자',handler:'지배인',booking_date:'2026-07-20',guest_count:'1+',check_in:'2026-09-01',check_out:'2026-09-03',phone:'0503-5096-2186',note:'시트 표기 2박 / 52',reported_nights:2},
+      {id:'r401-lee',room:'401',room_type:'프리미어 트리플',guest_name:'이혜선',nationality:'',source:'야놀자',handler:'매니저',booking_date:'2026-08-04',guest_count:'1',check_in:'2026-09-01',check_out:'2026-09-04',phone:'0503-5075-4153',note:'룸온리 · 시트 표기 3박 / 81.8',reported_nights:3},
+      {id:'r102-hyunji',room:'102',room_type:'패밀리',guest_name:'hyunji jung',nationality:'',source:'야놀자',handler:'최일용',booking_date:'2026-08-29',guest_count:'3',check_in:'2026-08-30',check_out:'2026-08-31',phone:'010-9490-7942',note:'시트 표기: 20.9',parking:'4300'},
+      {id:'r102-ching',room:'102',room_type:'패밀리',guest_name:'CHING JU YEH',nationality:'중국',source:'부킹닷컴',handler:'우주임',booking_date:'2026-07-22',guest_count:'4',check_in:'2026-08-31',check_out:'2026-09-02',phone:'886 936 509 092',note:'시트 표기: 2박 / 59',reported_nights:2,parking:'도보'}
+    ],
+    blocks:[
+      {id:'b303-0901',room:'303',date:'2026-09-01',label:'메모 · 블럭',note:'9/1 일일 시트에 메모 · 블럭 표기'},
+      {id:'b401-note',room:'401',date:'2026-08-30',label:'운영메모',note:'빈객실 판매 신경쓰기 · 내려놓고 당일에 보지말고'},
+      {id:'b101-note',room:'101',date:'2026-08-29',label:'운영메모',note:'하루이틀전부터 가격다운'},
+      {id:'b102-note',room:'102',date:'2026-08-29',label:'운영메모',note:'전략적 판매 예주시요 · 5분10분이면 되는데'}
+    ]
+  };
+
+  let store = load();
+  let current = {year:2026, month:8}; // September, zero-based
+  let selectedDate = '2026-09-01';
+  let searchTerm = '';
+  let pendingImport = null;
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  function clone(o){return JSON.parse(JSON.stringify(o))}
+  function load(){
+    let data=null;
+    try{const raw=localStorage.getItem(STORAGE_KEY); if(raw) data=JSON.parse(raw)}catch(e){}
+    if(!data)data=clone(seedData);
+    if(!Array.isArray(data.reservations))data.reservations=[];
+    if(!Array.isArray(data.blocks))data.blocks=[];
+    if(!data.dailyPrompts || typeof data.dailyPrompts!=='object')data.dailyPrompts={};
+    if(!data.dailySheetRecords || typeof data.dailySheetRecords!=='object')data.dailySheetRecords={};
+    if(!Array.isArray(data.lunchReservations))data.lunchReservations=[];
+    return data;
+  }
+  function save(){localStorage.setItem(STORAGE_KEY, JSON.stringify(store))}
+  function pad(n){return String(n).padStart(2,'0')}
+  function iso(y,m,d){return `${y}-${pad(m+1)}-${pad(d)}`}
+  function toDate(s){const [y,m,d]=String(s).split('-').map(Number);return new Date(y,m-1,d)}
+  function daysBetween(a,b){return Math.round((toDate(b)-toDate(a))/86400000)}
+  function monthName(y,m){return `${y}년 ${m+1}월`}
+  function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+  function uid(prefix='r'){return prefix+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+  function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2200)}
+  function normalizeSource(s=''){const x=String(s).trim(); if(!x)return '기타'; if(/부킹|booking/i.test(x))return '부킹닷컴'; if(/야놀자/i.test(x))return '야놀자'; if(/익스|expedia/i.test(x))return '익스피디아'; if(/아고다|agoda/i.test(x))return '아고다'; if(/트립|trip/i.test(x))return '트립닷컴'; return x}
+  function computedNights(r){return (r.check_in&&r.check_out)?Math.max(0,daysBetween(r.check_in,r.check_out)):0}
+  function roomType(r){return r.room_type || ROOM_TYPE[r.room] || ''}
+  function roomMeta(room){return ROOM_META[String(room)] || {room:String(room),type:'',base:0,max:0,jacuzzi:false}}
+  function formatKoreanDate(s){
+    if(!s)return '-'; const d=toDate(s); return `${d.getMonth()+1}월${d.getDate()}일`;
+  }
+  function stayRangeText(r){
+    const nights=computedNights(r); return `${formatKoreanDate(r.check_in)} ~ ${formatKoreanDate(r.check_out)} · ${nights}박${nights+1}일`;
+  }
+  function capacityInfo(room,guestCount){
+    const m=roomMeta(room); const actual=parseGuestCount(guestCount); const raw=String(guestCount??'').trim();
+    if(!actual) return {actual:0,text:'인원 미입력',tone:'neutral',detail:`기준 ${m.base}명 · 최대 ${m.max}명`};
+    if(actual>m.max) return {actual,text:`최대 ${actual-m.max}명 초과`,tone:'danger',detail:`실제 ${raw||actual}명 · 기준 ${m.base}명 · 최대 ${m.max}명`};
+    if(actual>m.base) return {actual,text:`기준 +${actual-m.base}명 · 최대 이내`,tone:'warn',detail:`실제 ${raw||actual}명 · 기준 ${m.base}명 · 최대 ${m.max}명`};
+    return {actual,text:'기준 이내',tone:'ok',detail:`실제 ${raw||actual}명 · 기준 ${m.base}명 · 최대 ${m.max}명`};
+  }
+  function roomLabel(room){const m=roomMeta(room);return `${m.jacuzzi?'💧 ':''}${room}`}
+
+  function reservationsOn(date, includeOut=true){
+    return store.reservations.filter(r=>{
+      if(!r.check_in||!r.check_out)return false;
+      const d=toDate(date), a=toDate(r.check_in), b=toDate(r.check_out);
+      return includeOut ? (d>=a && d<=b) : (d>=a && d<b);
+    }).sort((a,b)=>Number(a.room)-Number(b.room));
+  }
+  function statusFor(r,date){
+    if(date===r.check_in)return 'in';
+    if(date===r.check_out)return 'out';
+    return 'stay';
+  }
+  function badgeText(r,date){
+    const n=computedNights(r);
+    const st=statusFor(r,date);
+    if(st==='in')return n>1?`IN · 1/${n}박`:'IN · 1박';
+    if(st==='out')return `OUT · ${n}박`;
+    const idx=daysBetween(r.check_in,date)+1;
+    return `연박 ${idx}/${n}박`;
+  }
+  function matchSearch(r){
+    if(!searchTerm)return true;
+    const hay=[r.room,roomType(r),r.guest_name,r.phone,r.note,r.source,r.handler,r.nationality,r.parking].join(' ').toLowerCase();
+    return hay.includes(searchTerm);
+  }
+
+  function render(){
+    $('#monthTitle').textContent=monthName(current.year,current.month);
+    renderMetrics(); renderCalendar(); renderRoomGrid(); renderSources(); renderTimeline();
+  }
+
+  function renderMetrics(){
+    const date=selectedDate;
+    const occ=reservationsOn(date,false);
+    const arrivals=store.reservations.filter(r=>r.check_in===date);
+    const departures=store.reservations.filter(r=>r.check_out===date);
+    const stay=occ.filter(r=>r.check_in<date);
+    const roomsOccupied=new Set(occ.map(r=>r.room)).size;
+    const vacant=Math.max(0,ROOMS.length-roomsOccupied);
+    const pax=occ.reduce((sum,r)=>sum + parseGuestCount(r.guest_count),0);
+    $('#metrics').innerHTML=`
+      <div class="metric emph"><div class="label">선택일</div><div class="num">${date.slice(5).replace('-','/')}</div><div class="hint">${date}</div></div>
+      <div class="metric"><div class="label">투숙 객실</div><div class="num">${roomsOccupied}</div><div class="hint">총 ${ROOMS.length}실 중</div></div>
+      <div class="metric"><div class="label">연박 객실</div><div class="num">${new Set(stay.map(r=>r.room)).size}</div><div class="hint">체크인 다음날 이상</div></div>
+      <div class="metric"><div class="label">오늘 IN</div><div class="num">${arrivals.length}</div><div class="hint">신규 체크인</div></div>
+      <div class="metric"><div class="label">오늘 OUT</div><div class="num">${departures.length}</div><div class="hint">체크아웃/턴오버</div></div>
+      <div class="metric"><div class="label">공실 / 투숙인원</div><div class="num">${vacant}<span style="font-size:13px;color:#94a3b8">실</span> · ${pax}<span style="font-size:13px;color:#94a3b8">명+</span></div><div class="hint">인원 표기 2+2 등은 숫자 합산</div></div>`;
+  }
+  function parseGuestCount(v){
+    const nums=String(v??'').match(/\d+/g); return nums?nums.map(Number).reduce((a,b)=>a+b,0):0;
+  }
+
+  function renderCalendar(){
+    const cal=$('#calendar');
+    cal.innerHTML='';
+
+    // 이전달 + 현재달 + 다음달을 하나의 가로 캐러셀로 이어 붙인다.
+    // 그래서 8/31 → 9/1 같은 월 경계도 끊기지 않고 바로 옆에서 확인 가능.
+    const rangeStartDate=new Date(current.year,current.month-1,1);
+    const rangeEndDate=new Date(current.year,current.month+2,1); // exclusive
+    const rangeStart=iso(rangeStartDate.getFullYear(),rangeStartDate.getMonth(),rangeStartDate.getDate());
+    const rangeEnd=iso(rangeEndDate.getFullYear(),rangeEndDate.getMonth(),rangeEndDate.getDate());
+    const totalDays=daysBetween(rangeStart,rangeEnd);
+    const dates=[];
+    for(let i=0;i<totalDays;i++){
+      const d=new Date(rangeStartDate); d.setDate(rangeStartDate.getDate()+i);
+      dates.push(iso(d.getFullYear(),d.getMonth(),d.getDate()));
+    }
+
+    const now=new Date();
+    const todayIso=iso(now.getFullYear(),now.getMonth(),now.getDate());
+    const dayW=102;
+    const roomW=168;
+    const boardWidth=roomW + totalDays*dayW;
+    const weekdays=['일','월','화','수','목','금','토'];
+    const orderedRooms=[...ROOMS].sort((a,b)=>{
+      const fa=Number(a.room[0]), fb=Number(b.room[0]);
+      return fb-fa || Number(a.room)-Number(b.room);
+    });
+
+    // 같은 객실에서 연속 예약은 서로 확실히 다른 색을 사용한다.
+    const toneMap=new Map();
+    orderedRooms.forEach(meta=>{
+      const rs=store.reservations
+        .filter(r=>String(r.room)===meta.room && r.check_in && r.check_out)
+        .sort((a,b)=>a.check_in.localeCompare(b.check_in)||a.check_out.localeCompare(b.check_out));
+      rs.forEach((r,i)=>toneMap.set(r.id || `${r.room}-${r.check_in}-${r.guest_name}`, i%6));
+    });
+
+    const scroll=document.createElement('div');
+    scroll.className='scheduler-scroll';
+    scroll.style.setProperty('--days',totalDays);
+    scroll.style.setProperty('--dayw',dayW+'px');
+    scroll.style.setProperty('--roomw',roomW+'px');
+
+    const head=document.createElement('div');
+    head.className='scheduler-head';
+    head.style.width=boardWidth+'px';
+    head.innerHTML='<div class="scheduler-corner"><b>객실 현황</b><span>IN → STAY → OUT</span></div>';
+    dates.forEach((ds,i)=>{
+      const dt=toDate(ds);
+      const h=document.createElement('button');
+      const monthStart=dt.getDate()===1;
+      h.className=`scheduler-date${ds===selectedDate?' selected':''}${ds===todayIso?' today':''}${dt.getDay()===0?' sun':''}${dt.getDay()===6?' sat':''}${monthStart?' month-start':''}`;
+      h.style.gridColumn=String(i+2);
+      h.innerHTML=`${monthStart?`<span class="sd-month">${dt.getMonth()+1}월</span>`:''}<span class="sd-day">${dt.getDate()}</span><span class="sd-week">${weekdays[dt.getDay()]}</span>${ds===todayIso?'<i>TODAY</i>':''}`;
+      h.onclick=()=>{selectedDate=ds;current={year:dt.getFullYear(),month:dt.getMonth()};$('#quickDate').value=ds;render()};
+      head.appendChild(h);
+    });
+    scroll.appendChild(head);
+
+    orderedRooms.forEach((meta,rowIndex)=>{
+      const row=document.createElement('div');
+      const floor=meta.room[0];
+      const prevFloor=rowIndex?orderedRooms[rowIndex-1].room[0]:null;
+      row.className='scheduler-row'+(floor!==prevFloor?' floor-start':'');
+      row.style.width=boardWidth+'px';
+
+      const activeSelected=store.reservations.find(r=>r.room===meta.room && r.check_in<=selectedDate && r.check_out>selectedDate);
+      const roomCell=document.createElement('div');
+      roomCell.className='scheduler-room room-chip';
+      roomCell.dataset.room=meta.room;
+      roomCell.dataset.guests=activeSelected?.guest_count||'';
+      roomCell.innerHTML=`<div class="sr-top"><strong>${meta.jacuzzi?'💧 ':''}${meta.room}</strong><span>${floor}F</span></div><div class="sr-type">${esc(meta.type)}</div><div class="sr-cap">기준 ${meta.base} · 최대 ${meta.max}</div>`;
+      row.appendChild(roomCell);
+
+      const roomReservations=store.reservations
+        .filter(r=>r.room===meta.room && r.check_in && r.check_out && r.check_in<rangeEnd && r.check_out>=rangeStart)
+        .sort((a,b)=>a.check_in.localeCompare(b.check_in)||a.check_out.localeCompare(b.check_out));
+
+      // 날짜칸: 공실은 흰색, IN/OUT 이벤트가 있는 날짜는 사진처럼 푸른 배경 + 빨간 글씨.
+      dates.forEach((ds,i)=>{
+        const occupied=roomReservations.some(r=>r.check_in<=ds && r.check_out>ds);
+        const arrivals=roomReservations.filter(r=>r.check_in===ds);
+        const outs=roomReservations.filter(r=>r.check_out===ds);
+        const turnover=arrivals.length>0 && outs.length>0;
+        const block=store.blocks.find(b=>b.room===meta.room && b.date===ds);
+        const dt=toDate(ds);
+        const cell=document.createElement('button');
+        cell.className=`scheduler-cell${ds===selectedDate?' selected':''}${ds===todayIso?' today':''}${occupied?' occupied':' vacant'}${block?' blocked':''}${(arrivals.length||outs.length)?' event-day':''}${turnover?' turnover-day':''}${dt.getDate()===1?' month-start':''}`;
+        cell.style.gridColumn=String(i+2);
+        cell.dataset.date=ds;
+
+        if(turnover){
+          const outR=outs[0];
+          const inR=arrivals[0];
+          const outName=outR?.guest_name||'OUT';
+          const inName=inR?.guest_name||'IN';
+          const outKey=outR?.id || `${outR?.room||meta.room}-${outR?.check_in||ds}-${outName}`;
+          const inKey=inR?.id || `${inR?.room||meta.room}-${inR?.check_in||ds}-${inName}`;
+          const outTone=toneMap.get(outKey)??0;
+          const inTone=toneMap.get(inKey)??1;
+          cell.innerHTML=`<span class="turnover-box">
+            <span class="turnover-line outgoing event-tone-${outTone}"><span class="turn-label">OUT</span><span class="turn-name">${esc(outName)}</span><i class="turn-edge"></i></span>
+            <span class="turnover-line incoming event-tone-${inTone}"><span class="turn-label">IN</span><span class="turn-name">${esc(inName)}</span></span>
+          </span>`;
+          cell.title=`OUT: ${outName} / IN: ${inName}`;
+        }else if(arrivals.length){
+          const inR=arrivals[0];
+          const inName=inR?.guest_name||'IN';
+          const inKey=inR?.id || `${inR?.room||meta.room}-${inR?.check_in||ds}-${inName}`;
+          const inTone=toneMap.get(inKey)??1;
+          cell.innerHTML=`<span class="event-box event-in event-tone-${inTone}"><b>IN</b><small>${esc(inName)}</small></span>`;
+          cell.title=`IN: ${inName}`;
+        }else if(outs.length){
+          const outR=outs[0];
+          const outName=outR?.guest_name||'OUT';
+          const outKey=outR?.id || `${outR?.room||meta.room}-${outR?.check_in||ds}-${outName}`;
+          const outTone=toneMap.get(outKey)??0;
+          cell.innerHTML=`<span class="event-box event-out event-tone-${outTone}"><b>OUT</b><small>${esc(outName)}</small></span>`;
+          cell.title=`OUT: ${outName}`;
+        }else if(block && !occupied){
+          cell.innerHTML=`<span class="block-mini">${esc(block.label||'메모')}</span>`;
+          cell.title=block.note||block.label||'';
+        }else if(!occupied){
+          cell.innerHTML='<span class="vacant-text">공실</span>';
+        }
+        cell.onclick=()=>{selectedDate=ds;current={year:dt.getFullYear(),month:dt.getMonth()};$('#quickDate').value=ds;render()};
+        row.appendChild(cell);
+      });
+
+      // 예약바는 실제 숙박 밤(IN 포함, OUT 날짜 제외)을 연결한다.
+      // 이벤트 날짜는 별도 푸른 박스가 위에 올라와 IN / OUT / OUT-IN을 명확하게 보여준다.
+      roomReservations.forEach((r,idx)=>{
+        const clippedStart=r.check_in<rangeStart?rangeStart:r.check_in;
+        const clippedEnd=r.check_out>rangeEnd?rangeEnd:r.check_out;
+        const startIndex=daysBetween(rangeStart,clippedStart);
+        const endIndex=daysBetween(rangeStart,clippedEnd);
+        if(endIndex<=startIndex) return;
+        const gridStart=startIndex+2;
+        const gridEnd=endIndex+2;
+
+        const key=r.id || `${r.room}-${r.check_in}-${r.guest_name}`;
+        const tone=toneMap.get(key)??(idx%6);
+        const cap=capacityInfo(r.room,r.guest_count);
+        const visibleNights=endIndex-startIndex;
+        const startsHere=r.check_in>=rangeStart && r.check_in<rangeEnd;
+        const endsHere=r.check_out>rangeStart && r.check_out<rangeEnd;
+        const hasOutSameDay=startsHere && roomReservations.some(prev=>prev!==r && prev.check_out===r.check_in);
+        const hasStartEvent=startsHere;
+        const bar=document.createElement('div');
+        bar.className=`occupancy-bar guest-tone-${tone}${startsHere?' starts-here starts-on-event':''}${endsHere?' ends-here ends-on-event':''}${visibleNights<=1?' one-night':''}${visibleNights<=2?' short':''}${searchTerm&&!matchSearch(r)?' dimmed':''}${hasOutSameDay?' turnover-start':''}`;
+        bar.style.gridColumn=`${gridStart} / ${gridEnd}`;
+        bar.style.gridRow='1';
+        bar.title=`${r.room}호 · ${r.guest_name||'예약자 미입력'} · ${stayRangeText(r)} · ${cap.detail} · ${cap.text}`;
+        bar.innerHTML=`
+          ${startsHere?'<span class="occ-edge occ-in">IN</span>':'<span class="occ-more">‹</span>'}
+          <span class="occ-main">
+            <b>${esc(r.guest_name||'예약자 미입력')}</b>
+            <small>${esc(stayRangeText(r))} · 👤 ${esc(r.guest_count||'-')}명</small>
+          </span>
+          ${endsHere?'<span class="occ-edge occ-out">OUT</span>':'<span class="occ-more">›</span>'}
+        `;
+        bar.addEventListener('click',e=>{e.stopPropagation();openDetail(r,selectedDate)});
+        row.appendChild(bar);
+      });
+
+      scroll.appendChild(row);
+    });
+
+    cal.appendChild(scroll);
+
+    // 선택 날짜가 가운데쯤 보이게 이동. 월 경계도 자연스럽게 이어진다.
+    requestAnimationFrame(()=>{
+      const selected=scroll.querySelector('.scheduler-date.selected');
+      if(selected){
+        const target=Math.max(0,selected.offsetLeft-scroll.clientWidth*.42);
+        scroll.scrollLeft=target;
+      }
+    });
+  }
+
+  function renderRoomGrid(){
+    $('#roomPanelTitle').textContent=`${selectedDate.slice(5).replace('-','/')} 객실 한눈에 보기`;
+    const box=$('#roomGrid');box.innerHTML='';
+    ROOMS.forEach(meta=>{
+      const active=store.reservations.filter(r=>r.room===meta.room && toDate(selectedDate)>=toDate(r.check_in) && toDate(selectedDate)<toDate(r.check_out));
+      const arrivals=store.reservations.filter(r=>r.room===meta.room && r.check_in===selectedDate);
+      const outs=store.reservations.filter(r=>r.room===meta.room && r.check_out===selectedDate);
+      const block=store.blocks.find(b=>b.room===meta.room && b.date===selectedDate);
+      let cls='vacant', label='공실', guest='오늘은 비어 있어요', badge='OPEN', target=null, range='', capText=`기준 ${meta.base}명 · 최대 ${meta.max}명`, capTone='neutral';
+      if(active.length){
+        const r=active[0], cap=capacityInfo(meta.room,r.guest_count); target=r; cls=r.check_in===selectedDate?'occupied':'staying';label=r.check_in===selectedDate?'오늘 체크인':badgeText(r,selectedDate);guest=r.guest_name||'예약자 미입력';badge=r.check_in===selectedDate?'IN':'STAY';range=stayRangeText(r);capText=`${cap.detail} · ${cap.text}`;capTone=cap.tone;
+      }
+      if(outs.length && arrivals.length){
+        target=arrivals[0]; const cap=capacityInfo(meta.room,target.guest_count); cls='turnover';label='체크아웃 → 체크인';guest=`${outs[0].guest_name||''} → ${arrivals[0].guest_name||''}`;badge='TURN';range=stayRangeText(target);capText=`${cap.detail} · ${cap.text}`;capTone=cap.tone;
+      } else if(!active.length && outs.length){
+        target=outs[0]; const cap=capacityInfo(meta.room,target.guest_count); cls='turnover';label='오늘 체크아웃';guest=outs[0].guest_name||'';badge='OUT';range=stayRangeText(target);capText=`${cap.detail} · ${cap.text}`;capTone=cap.tone;
+      }
+      if(block && !active.length && !target){cls='turnover';label=block.label;guest=block.note||'';badge='NOTE'}
+      const div=document.createElement('div');div.className=`room-tile ${cls}`;
+      div.innerHTML=`
+        <div class="mini-badge">${esc(badge)}</div>
+        <div class="rn room-chip" data-room="${meta.room}" data-guests="${target?esc(target.guest_count||''):''}">${meta.jacuzzi?'<span class="water">💧</span>':''}${meta.room}</div>
+        <div class="rt">${esc(meta.type)} · 기준 ${meta.base} / 최대 ${meta.max}</div>
+        <div class="rstatus">${esc(label)}</div>
+        <div class="rguest">${esc(guest)}</div>
+        ${range?`<div class="tile-range">${esc(range)}</div>`:''}
+        <div class="tile-cap cap-${capTone}">${esc(capText)}</div>`;
+      if(target)div.onclick=()=>openDetail(target,selectedDate);
+      box.appendChild(div);
+    })
+  }
+
+  function renderSources(){
+    const monthStart=iso(current.year,current.month,1), monthEnd=iso(current.year,current.month+1,1);
+    const rel=store.reservations.filter(r=>r.check_in<monthEnd && r.check_out>monthStart);
+    const counts={};rel.forEach(r=>{const s=normalizeSource(r.source);counts[s]=(counts[s]||0)+1});
+    const total=Object.values(counts).reduce((a,b)=>a+b,0)||1;
+    const list=$('#sourceList');list.innerHTML='';
+    Object.entries(counts).sort((a,b)=>b[1]-a[1]).forEach(([s,c])=>{
+      const pct=Math.round(c/total*100);const row=document.createElement('div');row.className='source-row';row.innerHTML=`<div>${esc(s)}</div><div class="bar"><i style="width:${pct}%"></i></div><div class="source-count">${c}</div>`;list.appendChild(row)
+    });
+    if(!Object.keys(counts).length)list.innerHTML='<div style="color:#94a3b8;font-size:12px">예약 데이터가 없습니다.</div>';
+    $('#sourceSub').textContent=`${monthName(current.year,current.month)} · ${rel.length}건`;
+  }
+
+  function renderTimeline(){
+    const el=$('#timeline');
+    const days=new Date(current.year,current.month+1,0).getDate();
+    let html='<table><thead><tr><th class="sticky-room">ROOM</th>';
+    for(let d=1;d<=days;d++)html+=`<th>${d}</th>`;html+='</tr></thead><tbody>';
+    ROOMS.forEach(meta=>{
+      html+=`<tr><td class="sticky-room">${meta.room}<div style="font-size:8px;color:#94a3b8;font-weight:600">${meta.type}</div></td>`;
+      for(let d=1;d<=days;d++){
+        const ds=iso(current.year,current.month,d);
+        const r=store.reservations.find(x=>x.room===meta.room && toDate(ds)>=toDate(x.check_in)&&toDate(ds)<=toDate(x.check_out));
+        const b=store.blocks.find(x=>x.room===meta.room&&x.date===ds);
+        if(r){const st=statusFor(r,ds);html+=`<td><div class="tcell t-${st}" title="${esc(r.guest_name)} · ${esc(badgeText(r,ds))}">${st==='stay'?`${daysBetween(r.check_in,ds)+1}/${computedNights(r)}`:st.toUpperCase()}</div></td>`}
+        else if(b)html+=`<td><div class="tcell t-block">B</div></td>`; else html+='<td></td>';
+      }
+      html+='</tr>';
+    });
+    html+='</tbody></table>';el.innerHTML=html;
+  }
+
+  function openDetail(r,date){
+    const n=computedNights(r); const reported=r.reported_nights; const meta=roomMeta(r.room); const cap=capacityInfo(r.room,r.guest_count);
+    $('#detailTitle').textContent=`${meta.jacuzzi?'💧 ':''}${r.room} · ${r.guest_name||'예약자 미입력'}`;
+    const rows=[
+      ['객실',`${r.room} · ${roomType(r)}${meta.jacuzzi?' · 자쿠지 있음':' · 자쿠지 없음'}`],
+      ['숙박 일정',stayRangeText(r)],
+      ['선택일 상태',badgeText(r,date)],
+      ['인원 비교',`${cap.detail} · ${cap.text}`],
+      ['예약채널',normalizeSource(r.source)],['국적',r.nationality||'-'],['예약 받은사람',r.handler||'-'],
+      ['예약일',r.booking_date||'-'],['연락처',r.phone||'-'],['주차',r.parking||'-'],
+      ['시트 박수',reported?`${reported}박${reported!==n?` · 날짜 계산 ${n}박 ⚠`:''}`:'-']
+    ];
+    $('#detailGrid').innerHTML=rows.map(([k,v])=>`<div class="detail-item"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`).join('')+`<div class="detail-item detail-note"><div class="k">메모</div><div class="v">${esc(r.note||'-')}</div></div>`;
+    $('#detailModal').classList.add('open');
+  }
+
+  function renderBreakfastModal(){
+    const date=selectedDate;
+    $('#breakfastTitle').textContent=`${formatKoreanDate(date)} 조식예약`;
+    const active=store.reservations
+      .filter(r=>r.check_in<=date && r.check_out>date)
+      .sort((a,b)=>Number(a.room)-Number(b.room));
+    const box=$('#breakfastList');
+    if(!active.length){box.innerHTML='<div class="breakfast-empty">이 날짜에는 투숙 중인 객실이 없습니다.</div>';return;}
+    box.innerHTML=active.map(r=>{
+      const info=[r.breakfast_time,r.breakfast_menu,r.breakfast_count].filter(Boolean).join(' · ');
+      return `<div class="breakfast-row">
+        <div class="breakfast-room">${esc(r.room)}호</div>
+        <div><div class="breakfast-name">${esc(r.guest_name||'예약자 미입력')}</div><div class="breakfast-meta">${esc(stayRangeText(r))}</div></div>
+        <div class="breakfast-state">${esc(statusFor(r,date)==='in'?'체크인':'연박')}</div>
+        <div class="breakfast-info">${esc(info||'조식 정보 미입력')}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function nowStamp(){
+    const d=new Date();
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  function recordLabel(date){return `${formatKoreanDate(date)} 저장 기록`}
+  function setPromptEditor(text,editable=false){
+    const ed=$('#promptEditor'); if(!ed)return; ed.value=text||''; ed.readOnly=!editable;
+    $('#editPrompt').textContent=editable?'수정 중':'수정';
+  }
+  function loadPromptForDate(date){
+    const rec=store.dailyPrompts?.[date];
+    setPromptEditor(rec?.text || buildPrompt(),false);
+    $('#promptSaveState').textContent=rec?`${recordLabel(date)} · ${rec.saved_at}`:'아직 저장되지 않음';
+    refreshJsonCommand();
+  }
+  function savePromptForDate(){
+    const date=$('#sheetDate').value||selectedDate;
+    const text=$('#promptEditor').value.trim();
+    if(!text){alert('저장할 프롬프트를 입력해주세요.');return;}
+    store.dailyPrompts[date]={text,saved_at:nowStamp()};
+    const existing=store.dailySheetRecords[date]||{};
+    store.dailySheetRecords[date]={...existing,sheet_date:date,prompt:text,prompt_saved_at:store.dailyPrompts[date].saved_at};
+    save();setPromptEditor(text,false);loadPromptForDate(date);renderSheetHistory();toast(`${recordLabel(date)}을 저장했습니다.`);
+  }
+  function saveAnalysisResultForDate(){
+    const date=$('#sheetDate').value||selectedDate;
+    const text=$('#analysisResult').value.trim();
+    if(!text){alert('먼저 이미지 해석 결과를 붙여넣어 주세요.');return;}
+    const existing=store.dailySheetRecords[date]||{};
+    const promptText=$('#promptEditor').value.trim()||buildPrompt();
+    if(!store.dailyPrompts[date])store.dailyPrompts[date]={text:promptText,saved_at:nowStamp()};
+    store.dailySheetRecords[date]={...existing,sheet_date:date,prompt:promptText,prompt_saved_at:store.dailyPrompts[date].saved_at,analysis_text:text,json_command:buildJsonCommand(),analysis_saved_at:nowStamp()};
+    save();renderSheetHistory();refreshJsonCommand();toast(`${recordLabel(date)} · 이미지 해석 결과를 저장했습니다.`);
+  }
+
+  function renderSheetHistory(){
+    const box=$('#sheetHistory'); if(!box)return;
+    const dates=[...new Set([...Object.keys(store.dailyPrompts||{}),...Object.keys(store.dailySheetRecords||{})])].sort((a,b)=>b.localeCompare(a));
+    if(!dates.length){box.innerHTML='<div class="history-empty">아직 저장한 일일 예약시트 기록이 없습니다.</div>';return;}
+    box.innerHTML=dates.map(date=>{
+      const rec=store.dailySheetRecords[date]||{}; const p=store.dailyPrompts[date];
+      const rCount=rec.parsed?.reservations?.length ?? (rec.reservation_count??0); const bCount=rec.parsed?.blocks?.length ?? (rec.block_count??0);
+      const time=rec.applied_at||rec.analysis_saved_at||rec.prompt_saved_at||p?.saved_at||'';
+      const state=rec.parsed?`예약 ${rCount}건 · 메모/블럭 ${bCount}건 · 캘린더 반영됨`:(rec.analysis_text?`이미지 해석 결과 저장됨 · JSON 미반영`:`영문 해석 프롬프트 저장됨`);
+      return `<div class="history-item"><div class="history-date">${esc(recordLabel(date))}<small>${esc(time)}</small></div><div class="history-meta">${esc(state)}</div><div class="history-actions"><button data-record-date="${esc(date)}" class="load-record">보기</button><button data-record-date="${esc(date)}" class="edit-record">수정</button></div></div>`;
+    }).join('');
+  }
+  function openSavedRecord(date,editable=false){
+    const rec=store.dailySheetRecords[date]||{}; const p=store.dailyPrompts[date];
+    $('#sheetDate').value=date;
+    setPromptEditor(rec.prompt||p?.text||buildPrompt(),editable);
+    $('#analysisResult').value=rec.analysis_text||'';
+    $('#jsonInput').value=rec.json_text||'';
+    refreshJsonCommand();
+    $('#preview').classList.remove('show');$('#applyImport').disabled=true;pendingImport=null;
+    $('#promptSaveState').textContent=(rec.applied_at||p?.saved_at)?`${recordLabel(date)} · ${rec.applied_at||p?.saved_at}`:'아직 저장되지 않음';
+    if(editable)$('#analysisResult').focus();
+  }
+
+  function lunchSourceClass(src){
+    if(src==='전화예약')return 'source-phone'; if(src==='지인예약')return 'source-friend'; if(src==='현장예약')return 'source-walkin'; if(src==='기타')return 'source-other'; return '';
+  }
+  function resetLunchForm(date){
+    $('#lunchEditId').value='';$('#lunchFormTitle').textContent='중식 예약 추가';$('#lunchDate').value=date||selectedDate;$('#lunchSource').value='네이버 스마트플레이스';$('#lunchName').value='';$('#lunchPhone').value='';$('#lunchPax').value='';$('#lunchStart').value='';$('#lunchEnd').value='';$('#lunchMenu').value='';$('#lunchNote').value='';$('#lunchConfirmed').checked=false;
+  }
+  function renderLunchList(){
+    const date=$('#lunchListDate').value||selectedDate; const rows=store.lunchReservations.filter(x=>x.date===date).sort((a,b)=>(a.start_time||'99:99').localeCompare(b.start_time||'99:99'));
+    $('#lunchTitle').textContent=`${formatKoreanDate(date)} 중식 예약현황`;$('#lunchCountText').textContent=`${rows.length}건 · ${rows.reduce((n,x)=>n+(Number(x.pax)||0),0)}명`;
+    const box=$('#lunchList');
+    if(!rows.length){box.innerHTML='<div class="lunch-empty">이 날짜에는 저장된 중식 예약이 없습니다.<br>왼쪽에서 첫 예약을 추가해보세요.</div>';return;}
+    box.innerHTML=rows.map(x=>`<div class="lunch-card">
+      <div class="lunch-source ${lunchSourceClass(x.source)}">${esc(x.source)}</div>
+      <div class="lunch-main"><div class="lunch-name">${esc(x.name||'예약자 미입력')}</div><div class="lunch-summary">${esc(x.pax||'-')}명 · ${esc(x.start_time||'--:--')} ~ ${esc(x.end_time||'--:--')}</div><div class="lunch-menu"><b>메뉴</b> ${esc(x.menu||'미입력')}${x.note?`<br><b>메모</b> ${esc(x.note)}`:''}${x.phone?`<br><b>연락처</b> ${esc(x.phone)}`:''}</div></div>
+      <div class="lunch-confirm ${x.confirmed?'':'pending'}">${x.confirmed?'예약확정 완료':'확정 대기'}</div>
+      <div class="lunch-card-actions"><button class="edit-lunch" data-lunch-id="${esc(x.id)}">수정</button><button class="delete-lunch" data-lunch-id="${esc(x.id)}">삭제</button></div>
+    </div>`).join('');
+  }
+  function saveLunchReservation(){
+    const date=$('#lunchDate').value; const source=$('#lunchSource').value; const pax=$('#lunchPax').value;
+    if(!date){alert('예약일을 선택해주세요.');return;} if(!pax){alert('인원을 입력해주세요.');return;}
+    const row={id:$('#lunchEditId').value||uid('l'),date,source,name:$('#lunchName').value.trim(),phone:$('#lunchPhone').value.trim(),pax:Number(pax),start_time:$('#lunchStart').value,end_time:$('#lunchEnd').value,menu:$('#lunchMenu').value.trim(),note:$('#lunchNote').value.trim(),confirmed:$('#lunchConfirmed').checked,updated_at:nowStamp()};
+    const idx=store.lunchReservations.findIndex(x=>x.id===row.id); if(idx>=0)store.lunchReservations[idx]={...store.lunchReservations[idx],...row}; else store.lunchReservations.push(row);
+    save();$('#lunchListDate').value=date;renderLunchList();resetLunchForm(date);toast('중식 예약을 저장했습니다.');
+  }
+  function editLunchReservation(id){
+    const x=store.lunchReservations.find(v=>v.id===id);if(!x)return;$('#lunchEditId').value=x.id;$('#lunchFormTitle').textContent='중식 예약 수정';$('#lunchDate').value=x.date;$('#lunchSource').value=x.source||'기타';$('#lunchName').value=x.name||'';$('#lunchPhone').value=x.phone||'';$('#lunchPax').value=x.pax||'';$('#lunchStart').value=x.start_time||'';$('#lunchEnd').value=x.end_time||'';$('#lunchMenu').value=x.menu||'';$('#lunchNote').value=x.note||'';$('#lunchConfirmed').checked=!!x.confirmed;
+  }
+
+  function buildPrompt(){
+    const date=$('#sheetDate').value||'YYYY-MM-DD';
+    return `Analyze the attached TOYU daily room reservation sheet image for the sheet date ${date}.
+
+IMPORTANT: This is the IMAGE-READING step only. Do NOT return JSON yet. I want a clear, structured text transcription that a second prompt can later convert into JSON.
+
+Read every populated room row carefully. Valid room numbers are only:
+101, 102, 201, 202, 203, 204, 205, 301, 302, 303, 304, 305, 401.
+
+For EACH populated reservation row, report the following fields in this exact order:
+ROOM:
+ROOM TYPE:
+GUEST NAME:
+NATIONALITY:
+BOOKING SOURCE:
+BOOKING HANDLER:
+BOOKING DATE:
+GUEST COUNT:
+CHECK-IN:
+CHECK-OUT:
+PHONE:
+EXTRA GUEST:
+EXTRA BEDDING:
+PARKING:
+SPECIAL NOTE:
+REPORTED NIGHTS:
+
+Reading rules:
+1. Read only what is visibly present in the attached image. Never guess, infer, reconstruct, autofill, or reuse information from another image or previous conversation.
+2. Preserve every guest name exactly as shown in the image, including Korean, English, Chinese, capitalization, spacing, and spelling. Do not translate or normalize names.
+3. Preserve guest-count expressions exactly as written, including forms such as 2+2, 3+1, or 1+.
+4. Convert clearly visible dates to YYYY-MM-DD when possible. If a date cannot be read confidently, write UNCLEAR instead of guessing.
+5. Include colored-cell notes, red/yellow warnings, room upgrades, hard blocks, review requests, parking numbers, and other visible operational notes under SPECIAL NOTE.
+6. If a room row contains no guest but contains an operational note, write it under a separate section titled OPERATIONAL / BLOCK NOTES with ROOM, DATE, LABEL, and NOTE.
+7. If a field is visibly blank, write BLANK. If it is present but unreadable, write UNCLEAR.
+8. Do not skip a populated room row. Do not create a room or guest that is not visible.
+9. If the sheet contains the same room with an outgoing guest and a new incoming guest, describe BOTH reservations separately so the OUT → IN turnover can be reconstructed correctly.
+10. At the end, add a short CHECK section listing: populated reservation count, operational/block note count, and any uncertain fields that need human review.
+
+Output plain structured text only. Do not use JSON. Do not add advice or commentary outside the transcription.`;
+  }
+
+  function buildJsonCommand(){
+    const date=$('#sheetDate').value||'YYYY-MM-DD';
+    const analysis=($('#analysisResult')?.value||'').trim();
+    return `Convert the structured reservation-sheet transcription below into STRICT JSON for the toyou calendar.
+
+SHEET DATE: ${date}
+
+Rules:
+1. Use ONLY information contained in the transcription below. Never infer missing values.
+2. Valid rooms only: 101,102,201,202,203,204,205,301,302,303,304,305,401.
+3. Preserve guest names exactly as written in the transcription.
+4. Keep guest_count as a STRING so values such as "2+2" and "1+" are preserved.
+5. Dates must be YYYY-MM-DD. If the transcription says BLANK or UNCLEAR, use null.
+6. If the transcription describes an outgoing guest and a new incoming guest for the same room/date, create TWO separate reservation objects with their own check_in/check_out dates. Do not merge the guests.
+7. Operational notes without a guest belong in blocks, not reservations.
+8. Return valid JSON ONLY. No markdown fences, explanation, heading, or comments.
+9. Do not invent a reservation that is absent from the transcription.
+10. Use null for unknown/blank values, except guest_count which may remain a visible string.
+
+Required JSON schema:
+{
+  "sheet_date": "${date}",
+  "reservations": [
+    {
+      "room": "202",
+      "room_type": "스탠다드",
+      "guest_name": "VISIBLE NAME EXACTLY AS TRANSCRIBED",
+      "nationality": null,
+      "source": null,
+      "handler": null,
+      "booking_date": null,
+      "guest_count": "2+2",
+      "check_in": "2026-08-31",
+      "check_out": "2026-09-02",
+      "phone": null,
+      "extra_guest": null,
+      "extra_bedding": null,
+      "parking": null,
+      "note": null,
+      "reported_nights": 2
+    }
+  ],
+  "blocks": [
+    {
+      "room": "401",
+      "date": "${date}",
+      "label": "운영메모",
+      "note": "VISIBLE OPERATIONAL NOTE"
+    }
+  ]
+}
+
+TRANSCRIPTION TO CONVERT:
+------------------------------
+${analysis || '[Paste the image-reading result here first.]'}
+------------------------------
+
+Final check before answering: JSON syntax must be valid; no duplicate copies of the same reservation; no invented values; output JSON only.`;
+  }
+
+  function refreshJsonCommand(){
+    const ed=$('#jsonCommandEditor'); if(ed) ed.value=buildJsonCommand();
+  }
+  function refreshPrompt(){loadPromptForDate($('#sheetDate').value||selectedDate)}
+
+  function cleanJsonText(text){
+    let t=text.trim();t=t.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
+    const a=t.indexOf('{'), b=t.lastIndexOf('}'); if(a>=0&&b>a)t=t.slice(a,b+1);return t;
+  }
+  function validateImport(obj){
+    const errors=[];
+    if(!obj||typeof obj!=='object')errors.push('JSON 객체가 아닙니다.');
+    const rs=Array.isArray(obj?.reservations)?obj.reservations:[];
+    rs.forEach((r,i)=>{
+      if(!ROOM_TYPE[r.room])errors.push(`${i+1}번째 예약: 객실 ${r.room}은 허용 객실이 아닙니다.`);
+      if(!r.check_in||!r.check_out)errors.push(`${r.room||i+1}: 체크인/체크아웃 날짜가 필요합니다.`);
+    });
+    return errors;
+  }
+  function previewImport(){
+    try{
+      const obj=JSON.parse(cleanJsonText($('#jsonInput').value));
+      const errors=validateImport(obj);if(errors.length)throw new Error(errors.join('\n'));
+      pendingImport=obj;
+      const rs=obj.reservations||[], bs=obj.blocks||[];
+      $('#previewHead').textContent=`예약 ${rs.length}건 · 메모/블럭 ${bs.length}건 · 기준일 ${obj.sheet_date||$('#sheetDate').value}`;
+      $('#previewList').innerHTML=rs.map(r=>`<div class="preview-item"><div class="p-room">${esc(r.room)}</div><div><b>${esc(r.guest_name||'예약자 미입력')}</b><div class="p-date">${esc(r.check_in)} → ${esc(r.check_out)} · ${esc(r.source||'채널 미입력')}</div></div><div>${esc(r.guest_count||'-')}명</div></div>`).join('')+bs.map(b=>`<div class="preview-item"><div class="p-room">${esc(b.room)}</div><div><b>${esc(b.label||'메모')}</b><div class="p-date">${esc(b.date||obj.sheet_date||'')}</div></div><div>BLOCK</div></div>`).join('');
+      $('#preview').classList.add('show');$('#applyImport').disabled=false;
+    }catch(e){pendingImport=null;$('#applyImport').disabled=true;$('#preview').classList.remove('show');alert('JSON을 확인해주세요.\n\n'+e.message)}
+  }
+  function applyImport(){
+    if(!pendingImport)return;
+    const recordDate=pendingImport.sheet_date||$('#sheetDate').value||selectedDate;
+    const promptText=$('#promptEditor').value.trim()||buildPrompt();
+    store.dailyPrompts[recordDate]={text:promptText,saved_at:store.dailyPrompts[recordDate]?.saved_at||nowStamp()};
+    store.dailySheetRecords[recordDate]={sheet_date:recordDate,prompt:promptText,prompt_saved_at:store.dailyPrompts[recordDate].saved_at,analysis_text:$('#analysisResult').value.trim(),json_command:buildJsonCommand(),json_text:$('#jsonInput').value,parsed:clone(pendingImport),reservation_count:(pendingImport.reservations||[]).length,block_count:(pendingImport.blocks||[]).length,applied_at:nowStamp()};
+    const rs=pendingImport.reservations||[];
+    rs.forEach(raw=>{
+      const r={...raw};r.room=String(r.room);r.room_type=r.room_type||ROOM_TYPE[r.room]||'';r.source=normalizeSource(r.source);r.id=r.id||uid('r');
+      const idx=store.reservations.findIndex(x=>x.room===r.room&&x.check_in===r.check_in&&x.check_out===r.check_out);
+      if(idx>=0)store.reservations[idx]={...store.reservations[idx],...r,id:store.reservations[idx].id}; else store.reservations.push(r);
+    });
+    (pendingImport.blocks||[]).forEach(raw=>{
+      const b={...raw};b.room=String(b.room);b.date=b.date||pendingImport.sheet_date||$('#sheetDate').value;b.id=b.id||uid('b');
+      const idx=store.blocks.findIndex(x=>x.room===b.room&&x.date===b.date&&x.label===b.label);
+      if(idx>=0)store.blocks[idx]={...store.blocks[idx],...b,id:store.blocks[idx].id}; else store.blocks.push(b);
+    });
+    save();
+    if(pendingImport.sheet_date){const d=toDate(pendingImport.sheet_date);current={year:d.getFullYear(),month:d.getMonth()};selectedDate=pendingImport.sheet_date;}
+    render();renderSheetHistory();$('#importModal').classList.remove('open');toast(`${recordLabel(recordDate)} · 예약 ${rs.length}건 반영 완료`);pendingImport=null;
+  }
+
+  function showRoomTooltip(chip){
+    const room=chip.dataset.room; if(!room)return;
+    const meta=roomMeta(room); const guests=chip.dataset.guests||''; const cap=capacityInfo(room,guests);
+    const tip=$('#roomTooltip');
+    tip.innerHTML=`
+      <div class="tip-title"><span>${meta.jacuzzi?'💧 ':''}${esc(room)}호</span><span class="tip-jacuzzi">${meta.jacuzzi?'자쿠지 있음':'자쿠지 없음'}</span></div>
+      <div class="tip-type">${esc(meta.type)}</div>
+      <div class="tip-rule"></div>
+      <div class="tip-line"><span>기준 인원</span><b>${meta.base}명</b></div>
+      <div class="tip-line"><span>최대 인원</span><b>${meta.max}명</b></div>
+      <div class="tip-line"><span>현재 예약 인원</span><b>${guests?esc(guests)+'명':'-'}</b></div>
+      <div class="tip-cap cap-${cap.tone}">${esc(cap.text)}</div>`;
+    const r=chip.getBoundingClientRect();
+    tip.classList.add('show');
+    const tw=tip.offsetWidth, th=tip.offsetHeight;
+    let left=r.left+r.width/2-tw/2, top=r.top-th-10;
+    left=Math.max(10,Math.min(left,window.innerWidth-tw-10));
+    if(top<10)top=r.bottom+10;
+    tip.style.left=left+'px';tip.style.top=top+'px';
+  }
+  document.addEventListener('mouseover',e=>{
+    const chip=e.target.closest('.room-chip');
+    if(!chip || (e.relatedTarget && chip.contains(e.relatedTarget)))return;
+    showRoomTooltip(chip);
+  });
+  document.addEventListener('mouseout',e=>{
+    const chip=e.target.closest('.room-chip');
+    if(!chip || (e.relatedTarget && chip.contains(e.relatedTarget)))return;
+    $('#roomTooltip').classList.remove('show');
+  });
+  window.addEventListener('scroll',()=>$('#roomTooltip').classList.remove('show'),true);
+
+  $('#prevMonth').onclick=()=>{current.month--;if(current.month<0){current.month=11;current.year--}render()};
+  $('#nextMonth').onclick=()=>{current.month++;if(current.month>11){current.month=0;current.year++}render()};
+  $('#todayBtn').onclick=()=>{const d=new Date();current={year:d.getFullYear(),month:d.getMonth()};selectedDate=iso(d.getFullYear(),d.getMonth(),d.getDate());$('#quickDate').value=selectedDate;render()};
+  $('#quickDate').addEventListener('change',e=>{if(!e.target.value)return;selectedDate=e.target.value;const d=toDate(selectedDate);current={year:d.getFullYear(),month:d.getMonth()};render()});
+  $('#breakfastBtn').onclick=()=>{renderBreakfastModal();$('#breakfastModal').classList.add('open')};
+  $('#lunchBtn').onclick=()=>{$('#lunchListDate').value=selectedDate;resetLunchForm(selectedDate);renderLunchList();$('#lunchModal').classList.add('open')};
+  $('#jumpSelected').onclick=()=>{const d=toDate(selectedDate);current={year:d.getFullYear(),month:d.getMonth()};render();document.querySelector(`.day[data-date="${selectedDate}"]`)?.scrollIntoView({behavior:'smooth',block:'center'})};
+  $('#searchInput').addEventListener('input',e=>{searchTerm=e.target.value.trim().toLowerCase();renderCalendar()});
+  $$('.view-toggle button').forEach(b=>b.onclick=()=>{$$('.view-toggle button').forEach(x=>x.classList.remove('active'));b.classList.add('active');const v=b.dataset.view;$('#calendarShell').classList.toggle('hidden',v==='timeline');$('#timeline').classList.toggle('active',v==='timeline')});
+  $('#openImport').onclick=()=>{$('#sheetDate').value=selectedDate;const rec=store.dailySheetRecords[selectedDate]||{};$('#analysisResult').value=rec.analysis_text||'';$('#jsonInput').value=rec.json_text||'';$('#importModal').classList.add('open');loadPromptForDate(selectedDate);refreshJsonCommand();renderSheetHistory()};
+  $('#sheetDate').addEventListener('change',e=>{loadPromptForDate(e.target.value);const rec=store.dailySheetRecords[e.target.value];$('#analysisResult').value=rec?.analysis_text||'';$('#jsonInput').value=rec?.json_text||'';refreshJsonCommand();$('#preview').classList.remove('show');$('#applyImport').disabled=true;pendingImport=null});
+  $('#editPrompt').onclick=()=>{const ed=$('#promptEditor');setPromptEditor(ed.value,true);ed.focus()};
+  $('#savePrompt').onclick=savePromptForDate;
+  $('#refreshHistory').onclick=renderSheetHistory;
+  $('#copyPrompt').onclick=async()=>{const text=$('#promptEditor').value||buildPrompt();try{await navigator.clipboard.writeText(text);toast('이미지와 함께 사용할 영문 프롬프트를 복사했습니다.')}catch(e){const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();toast('영문 프롬프트를 복사했습니다.')}};
+  $('#saveAnalysisResult').onclick=saveAnalysisResultForDate;
+  $('#analysisResult').addEventListener('input',refreshJsonCommand);
+  $('#copyJsonCommand').onclick=async()=>{const text=buildJsonCommand();$('#jsonCommandEditor').value=text;try{await navigator.clipboard.writeText(text);toast('JSON 변환 명령을 복사했습니다.')}catch(e){const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();toast('JSON 변환 명령을 복사했습니다.')}};
+  $('#previewBtn').onclick=previewImport;$('#applyImport').onclick=applyImport;
+  $('[data-close="importModal"]').onclick=()=>$('#importModal').classList.remove('open');
+  $('[data-close="detailModal"]').onclick=()=>$('#detailModal').classList.remove('open');
+  $('[data-close="breakfastModal"]').onclick=()=>$('#breakfastModal').classList.remove('open');
+  $('[data-close="lunchModal"]').onclick=()=>$('#lunchModal').classList.remove('open');
+  $$('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
+  document.addEventListener('click',e=>{
+    const loadBtn=e.target.closest('.load-record'); if(loadBtn){openSavedRecord(loadBtn.dataset.recordDate,false);return;}
+    const editBtn=e.target.closest('.edit-record'); if(editBtn){openSavedRecord(editBtn.dataset.recordDate,true);return;}
+    const editLunch=e.target.closest('.edit-lunch'); if(editLunch){editLunchReservation(editLunch.dataset.lunchId);return;}
+    const delLunch=e.target.closest('.delete-lunch'); if(delLunch){const id=delLunch.dataset.lunchId;if(confirm('이 중식 예약을 삭제할까요?')){store.lunchReservations=store.lunchReservations.filter(x=>x.id!==id);save();renderLunchList();toast('중식 예약을 삭제했습니다.')}return;}
+  });
+  $('#saveLunch').onclick=saveLunchReservation;
+  $('#cancelLunchEdit').onclick=()=>resetLunchForm($('#lunchDate').value||selectedDate);
+  $('#lunchListDate').addEventListener('change',e=>{renderLunchList();resetLunchForm(e.target.value)});
+  $('#resetBtn').onclick=()=>{if(confirm('현재 저장된 내용을 지우고, 8/29~9/1 시트 기반 샘플 데이터로 복원할까요?')){store=clone(seedData);save();current={year:2026,month:8};selectedDate='2026-09-01';render();toast('샘플 데이터를 복원했습니다.')}};
+  $('#exportBtn').onclick=()=>{
+    const blob=new Blob([JSON.stringify(store,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='toyou-data.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
+  };
+
+  $('#quickDate').value=selectedDate;
+  $('#sheetDate').value=selectedDate;
+  refreshPrompt();render();
+})();
+</script>
+</body>
+</html>
