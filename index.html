@@ -651,7 +651,7 @@
     <div class="modal-body">
       <div class="workflow-help">
         <div class="workflow-help-title">딱 이 순서대로 하면 달력에 들어갑니다</div>
-        <div class="workflow-help-sub">사이트가 이미지를 직접 읽는 것은 아니에요. <b>① 사이트에서 프롬프트 복사 → ② 대화창에 이미지와 함께 전송 → ③ 받은 글을 사이트에 붙임 → ④ JSON 변환 명령을 다시 대화창에 전송 → ⑤ 받은 JSON을 사이트에 붙여 저장</b> 순서입니다.</div>
+        <div class="workflow-help-sub">가장 쉬운 방법은 <b>① 프롬프트 복사 → 이미지와 함께 대화창에 전송 → ② 받은 글 설명을 붙여넣기 → 「②→JSON 자동 만들기」 → ⑤ 달력 반영</b>입니다. 필요할 때만 ③의 JSON 변환 명령을 별도로 사용할 수 있어요.</div>
         <div class="workflow-road">
           <div class="workflow-node site"><b>1. 사이트</b><span>날짜 선택 후<br>영문 프롬프트 복사</span></div>
           <div class="workflow-node chat"><b>2. 대화창</b><span>예약시트 이미지 +<br>복사한 프롬프트 전송</span></div>
@@ -678,14 +678,17 @@
       <div class="action-note"><b>대화창에서:</b> 예약시트 사진을 첨부하고 방금 복사한 영문 프롬프트를 같은 메시지에 붙여 보내세요. 답변은 JSON이 아니라 ROOM / GUEST NAME / CHECK-IN / CHECK-OUT 등이 적힌 긴 글 설명으로 나와야 정상입니다.</div>
 
       <div class="field"><label>② 이미지에서 읽어준 <u>글 설명 전체</u>를 여기에 붙여넣기</label><textarea id="analysisResult" placeholder="여기에는 JSON을 넣지 마세요. 이미지에서 읽어준 ROOM:, GUEST NAME:, CHECK-IN: ... 형식의 글 설명 전체를 붙여넣습니다."></textarea></div>
-      <div class="modal-actions" style="margin-top:0;justify-content:flex-end"><button class="btn" id="saveAnalysisResult">② 해석 결과 저장</button></div>
+      <div class="modal-actions" style="margin-top:0;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;color:#8b7f7b"><b>추천:</b> 글 설명을 붙인 뒤 바로 JSON으로 바꿀 수 있어요.</span>
+        <span style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn" id="saveAnalysisResult">② 해석 결과 저장</button><button class="btn primary" id="autoBuildJson">② → JSON 자동 만들기</button></span>
+      </div>
 
       <div class="field"><label>③ 아래 JSON 변환 명령을 복사 → 대화창에 <u>새 메시지로</u> 보내기</label><textarea class="prompt-editor" id="jsonCommandEditor" readonly placeholder="②에 글 설명을 붙여넣으면 JSON 변환 명령이 자동으로 만들어집니다."></textarea></div>
       <div class="modal-actions" style="margin-top:0;justify-content:flex-end"><button class="btn primary" id="copyJsonCommand">③ JSON 변환 명령 복사</button></div>
       <div class="action-note"><b>대화창에서:</b> 이번에는 이미지가 필요 없습니다. 방금 복사한 JSON 변환 명령만 새 메시지로 보내고, 돌아온 <b>{ 로 시작해서 } 로 끝나는 JSON 전체</b>를 복사하세요.</div>
 
-      <div class="field"><label>④ 반환된 <u>JSON 전체</u>를 여기에 붙여넣기</label><textarea id="jsonInput" placeholder='여기에는 { "sheet_date": "2026-09-02", "reservations": [...] } 형태의 JSON만 붙여넣습니다.'></textarea></div>
-      <div class="notice"><b>중요:</b> ②에는 이미지 해석 글, ④에는 JSON을 넣어야 합니다. 서로 바꾸어 넣으면 작동하지 않습니다. 시트 기준일은 위에서 선택한 날짜로 사이트가 고정합니다.</div>
+      <div class="field"><label>④ 완성된 <u>JSON 전체</u></label><textarea id="jsonInput" placeholder='정상이라면 첫 글자가 { 이고, 안에 "sheet_date", "reservations"가 있습니다. ③의 명령문 자체를 이 칸에 붙이면 안 됩니다.'></textarea></div>
+      <div class="notice"><b>중요:</b> ④에는 반드시 <b>{ 로 시작하는 JSON 결과</b>만 들어갑니다. 지금처럼 “CHECK / POPULATED RESERVATION COUNT / Final check…”가 보이면 JSON이 아니라 <b>③ 변환 명령문</b>이 들어간 것입니다. 가장 간단하게는 ②의 글 설명을 붙이고 <b>「② → JSON 자동 만들기」</b>를 누르세요.</div>
       <div class="preview" id="preview"><div class="preview-head" id="previewHead"></div><div class="preview-list" id="previewList"></div></div>
       <div class="modal-actions"><button class="btn" id="previewBtn">④ JSON 검사 · 미리보기</button><button class="btn primary" id="applyImport" disabled>⑤ 저장하고 달력에 반영</button></div>
       <div class="record-panel">
@@ -1703,6 +1706,105 @@ Final check before answering: JSON syntax must be valid; no duplicate copies of 
   }
   function refreshPrompt(){loadPromptForDate($('#sheetDate').value||selectedDate)}
 
+  function transcriptionValue(v){
+    const x=String(v??'').trim();
+    if(!x || /^(BLANK|UNCLEAR|NULL|NONE)$/i.test(x))return null;
+    return x;
+  }
+  function transcriptionBreakfast(v){
+    const x=String(v??'').trim().toUpperCase();
+    if(!x || /^(BLANK|UNCLEAR|NULL|NONE)$/.test(x))return null;
+    if(x==='INCLUDED' || x==='YES' || x==='TRUE' || x==='O')return true;
+    if(x==='NOT INCLUDED' || x==='NO' || x==='FALSE' || x==='X')return false;
+    return null;
+  }
+  function parseStructuredTranscription(raw){
+    const text=String(raw||'').replace(/\r/g,'');
+    if(!text.trim())throw new Error('② 이미지 해석 결과가 비어 있습니다.');
+    const sheetDate=$('#sheetDate').value||selectedDate;
+    const marker=/^OPERATIONAL\s*\/\s*BLOCK NOTES\s*:?[\t ]*$/im;
+    const match=text.match(marker);
+    const reservationText=match?text.slice(0,match.index):text;
+    const blockText=match?text.slice(match.index+match[0].length):'';
+    const fieldMap={
+      'ROOM':'room','ROOM TYPE':'room_type','GUEST NAME':'guest_name','NATIONALITY':'nationality',
+      'BOOKING SOURCE':'source','BOOKING HANDLER':'handler','BOOKING DATE':'booking_date','GUEST COUNT':'guest_count',
+      'CHECK-IN':'check_in','CHECK-OUT':'check_out','PHONE':'phone','EXTRA GUEST':'extra_guest','EXTRA BEDDING':'extra_bedding',
+      'PARKING':'parking','BREAKFAST INCLUDED':'breakfast_included','BREAKFAST TIME':'breakfast_time','BREAKFAST MENU':'breakfast_menu',
+      'BREAKFAST COUNT':'breakfast_count','SPECIAL NOTE':'note','REPORTED NIGHTS':'reported_nights'
+    };
+    const fieldRe=/^(ROOM TYPE|GUEST NAME|NATIONALITY|BOOKING SOURCE|BOOKING HANDLER|BOOKING DATE|GUEST COUNT|CHECK-IN|CHECK-OUT|PHONE|EXTRA GUEST|EXTRA BEDDING|PARKING|BREAKFAST INCLUDED|BREAKFAST TIME|BREAKFAST MENU|BREAKFAST COUNT|SPECIAL NOTE|REPORTED NIGHTS|ROOM)\s*:\s*(.*)$/i;
+    const rows=[]; let cur=null; let lastKey=null;
+    for(const rawLine of reservationText.split('\n')){
+      const line=rawLine.trimEnd();
+      const m=line.trim().match(fieldRe);
+      if(m){
+        const label=m[1].toUpperCase(); const key=fieldMap[label]; const val=m[2].trim();
+        if(key==='room'){
+          if(cur && cur.room)rows.push(cur);
+          cur={};
+        }
+        if(!cur)continue;
+        cur[key]=val; lastKey=key;
+      }else if(cur && lastKey && line.trim() && !/^CHECK\b/i.test(line.trim())){
+        cur[lastKey]=(cur[lastKey]?cur[lastKey]+'\n':'')+line.trim();
+      }
+    }
+    if(cur && cur.room)rows.push(cur);
+    const reservations=rows.map(r=>{
+      const room=normalizeRoomValue(r.room);
+      const nights=transcriptionValue(r.reported_nights);
+      const nmatch=nights?String(nights).match(/\d+/):null;
+      return {
+        room,
+        room_type:transcriptionValue(r.room_type)||ROOM_TYPE[room]||null,
+        guest_name:transcriptionValue(r.guest_name),
+        nationality:transcriptionValue(r.nationality),
+        source:transcriptionValue(r.source),
+        handler:transcriptionValue(r.handler),
+        booking_date:normalizeDateValue(transcriptionValue(r.booking_date)),
+        guest_count:transcriptionValue(r.guest_count),
+        check_in:normalizeDateValue(transcriptionValue(r.check_in)),
+        check_out:normalizeDateValue(transcriptionValue(r.check_out)),
+        phone:transcriptionValue(r.phone),
+        extra_guest:transcriptionValue(r.extra_guest),
+        extra_bedding:transcriptionValue(r.extra_bedding),
+        parking:transcriptionValue(r.parking),
+        breakfast_included:transcriptionBreakfast(r.breakfast_included),
+        breakfast_time:transcriptionValue(r.breakfast_time),
+        breakfast_menu:transcriptionValue(r.breakfast_menu),
+        breakfast_count:transcriptionValue(r.breakfast_count),
+        note:transcriptionValue(r.note),
+        reported_nights:nmatch?Number(nmatch[0]):null
+      };
+    }).filter(r=>ROOM_TYPE[r.room] && r.guest_name);
+
+    const blocks=[];
+    if(blockText.trim()){
+      const blockFieldRe=/^(ROOM|DATE|LABEL|NOTE)\s*:\s*(.*)$/i;
+      let b=null,last=null;
+      for(const rawLine of blockText.split('\n')){
+        const line=rawLine.trimEnd(); const m=line.trim().match(blockFieldRe);
+        if(m){
+          const key=m[1].toLowerCase(); const val=m[2].trim();
+          if(key==='room'){if(b&&b.room)blocks.push(b);b={};}
+          if(!b)continue;b[key]=val;last=key;
+        }else if(b&&last&&line.trim()&&!/^CHECK\b/i.test(line.trim())) b[last]=(b[last]?b[last]+'\n':'')+line.trim();
+      }
+      if(b&&b.room)blocks.push(b);
+    }
+    const normalizedBlocks=blocks.map(b=>({room:normalizeRoomValue(b.room),date:normalizeDateValue(transcriptionValue(b.date))||sheetDate,label:transcriptionValue(b.label)||'운영메모',note:transcriptionValue(b.note)})).filter(b=>ROOM_TYPE[b.room]);
+    return {sheet_date:sheetDate,reservations,blocks:normalizedBlocks};
+  }
+  function autoBuildJsonFromTranscription(){
+    try{
+      const obj=parseStructuredTranscription($('#analysisResult').value);
+      $('#jsonInput').value=JSON.stringify(obj,null,2);
+      const ok=previewImport(false);
+      if(ok){toast(`해석 글에서 예약 ${obj.reservations.length}건을 JSON으로 만들었습니다.`);$('#jsonInput').scrollIntoView({behavior:'smooth',block:'center'});}
+    }catch(e){alert('② 해석 결과를 확인해주세요.\n\n'+e.message);}
+  }
+
   function cleanJsonText(text){
     let t=text.trim();t=t.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
     const a=t.indexOf('{'), b=t.lastIndexOf('}'); if(a>=0&&b>a)t=t.slice(a,b+1);return t;
@@ -1796,6 +1898,14 @@ Final check before answering: JSON syntax must be valid; no duplicate copies of 
     try{
       const rawText=$('#jsonInput').value.trim();
       if(!rawText){pendingImport=null;$('#applyImport').disabled=true;$('#preview').classList.remove('show');updateWorkflowState();return false;}
+      if(!rawText.trim().startsWith('{')){
+        const looksLikeCommand=/TRANSCRIPTION TO CONVERT|POPULATED RESERVATION COUNT|Final check before answering|STRICT JSON/i.test(rawText);
+        $('#previewHead').textContent=looksLikeCommand?'지금 ④에 들어간 것은 JSON 결과가 아니라 ③의 변환 명령문입니다.':'④ 내용이 JSON 형식이 아닙니다.';
+        $('#previewList').innerHTML=looksLikeCommand
+          ? '<div style="padding:16px;line-height:1.7;color:#8d514d"><b>해결:</b> ②의 이미지 해석 글을 그대로 둔 채 위의 <b>「② → JSON 자동 만들기」</b>를 누르세요. 또는 ③의 명령문을 대화창에 보내고, 대화창이 반환한 <b>{ 로 시작하는 JSON 답변</b>만 ④에 붙여넣으세요.</div>'
+          : '<div style="padding:16px;color:#8d514d">JSON은 첫 글자가 <b>{</b> 이어야 합니다.</div>';
+        $('#preview').classList.add('show');pendingImport=null;$('#applyImport').disabled=true;updateWorkflowState();return false;
+      }
       let obj=JSON.parse(cleanJsonText(rawText));
       const selectedSheetDate=$('#sheetDate').value||selectedDate;
       const returnedSheetDate=obj.sheet_date||null;
@@ -1907,6 +2017,7 @@ Final check before answering: JSON syntax must be valid; no duplicate copies of 
   $('#clearAllSheetRecords').onclick=clearAllSheetRecords;
   $('#copyPrompt').onclick=async()=>{const text=$('#promptEditor').value||buildPrompt();try{await navigator.clipboard.writeText(text);toast('이미지와 함께 사용할 영문 프롬프트를 복사했습니다.')}catch(e){const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();toast('영문 프롬프트를 복사했습니다.')}};
   $('#saveAnalysisResult').onclick=saveAnalysisResultForDate;
+  $('#autoBuildJson').onclick=autoBuildJsonFromTranscription;
   $('#analysisResult').addEventListener('input',()=>{refreshJsonCommand();pendingImport=null;$('#preview').classList.remove('show');$('#applyImport').disabled=true;updateWorkflowState()});
   let jsonAutoTimer=null;
   $('#jsonInput').addEventListener('input',()=>{
