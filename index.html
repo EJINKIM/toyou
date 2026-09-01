@@ -535,6 +535,26 @@
   .breakfast-inline-hint{font-size:9px;color:#aaa09c;margin-top:7px;line-height:1.45}
   @media(max-width:760px){.breakfast-inline-notes{grid-template-columns:1fr}.breakfast-inline-head{align-items:flex-start}.breakfast-inline-title h2{font-size:16px}}
 
+
+
+  /* ===== 실제 memo1004.vercel.app 조식 리딩연습 연동 ===== */
+  .breakfast-live{margin-top:24px;padding:0 2px 28px}
+  .breakfast-live-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 12px}
+  .breakfast-live-title{display:flex;align-items:center;gap:10px;min-width:0}
+  .breakfast-live-icon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#fff2d9;font-size:19px;box-shadow:inset 0 0 0 1px #f0dcc0}
+  .breakfast-live-title h2{margin:0;font-size:18px;letter-spacing:-.04em;color:#574e4b;font-weight:900}
+  .breakfast-live-title p{margin:3px 0 0;font-size:10px;color:#9a8d88;line-height:1.55}
+  .breakfast-live-title p b{color:#6f625e}
+  .breakfast-live-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .live-badge{display:inline-flex;align-items:center;gap:6px;border:1px solid #d8e4d5;background:#f2f7ef;color:#657b60;border-radius:999px;padding:7px 10px;font-size:9px;font-weight:900;letter-spacing:.08em}
+  .live-badge i{width:7px;height:7px;border-radius:50%;background:#7da973;box-shadow:0 0 0 3px rgba(125,169,115,.13)}
+  .live-open-link{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+  .breakfast-live-frame-wrap{overflow:hidden;border:1px solid #e8ddd6;border-radius:20px;background:#fff;box-shadow:0 10px 28px rgba(92,75,67,.055)}
+  .breakfast-live-frame{display:block;width:100%;height:980px;border:0;background:#f4f3ee}
+  .breakfast-live-fallback{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;border-top:1px solid #eee5df;background:#fffaf7;color:#9a8d88;font-size:9.5px;line-height:1.45}
+  .breakfast-live-fallback a{color:#705f59;font-weight:900;text-decoration:none}
+  @media(max-width:900px){.breakfast-live-frame{height:900px}.breakfast-live-head{align-items:flex-start}.breakfast-live-actions{width:100%}}
+  @media(max-width:600px){.breakfast-live-frame{height:820px}.breakfast-live-title h2{font-size:16px}.breakfast-live-title p{font-size:9.5px}.breakfast-live-actions .btn,.live-badge{min-height:40px}}
 </style>
 </head>
 <body>
@@ -562,7 +582,7 @@
       <button class="iconbtn" id="nextMonth" aria-label="다음 달">›</button>
       <button class="btn small" id="todayBtn">오늘</button>
       <label class="quick-date-wrap"><span>날짜 선택</span><input type="date" id="quickDate" class="quick-date" value="2026-09-01" /></label>
-      <span class="meal-actions"><button class="btn small guest-roster-btn" id="guestRosterBtn">예약자 명단 수정</button><button class="btn small breakfast-btn" id="breakfastBtn">조식예약 보기</button><button class="btn small lunch-btn" id="lunchBtn">중식 예약현황</button></span>
+      <span class="meal-actions"><button class="btn small guest-roster-btn" id="guestRosterBtn">예약자 명단 수정</button><button class="btn small breakfast-btn" id="breakfastBtn">조식 리딩</button><button class="btn small lunch-btn" id="lunchBtn">중식 예약현황</button></span>
     </div>
     <div class="search"><input id="searchInput" placeholder="객실 · 고객명 · 연락처 · 메모 검색" /></div>
     <div class="view-toggle">
@@ -592,51 +612,35 @@
 
   <section class="timeline" id="timeline"></section>
 
-  <section class="breakfast-inline" id="breakfastInline">
-    <div class="breakfast-inline-head">
-      <div class="breakfast-inline-title">
-        <span class="egg">🍳</span>
+  <section class="breakfast-live" id="breakfastInline" aria-label="조식 리딩연습">
+    <div class="breakfast-live-head">
+      <div class="breakfast-live-title">
+        <span class="breakfast-live-icon">🍳</span>
         <div>
-          <h2 id="breakfastInlineTitle">조식 LIST</h2>
-          <p>조식 리딩연습의 객실별 입력표만 가져왔어요. 달력 날짜를 바꾸면 해당 날짜 표가 따로 저장됩니다.</p>
+          <h2>조식 리딩연습</h2>
+          <p><b>memo1004.vercel.app</b>의 실제 화면을 그대로 연결합니다. 이 안에서 입력·저장한 내용은 조식 리딩 사이트 기준으로 관리됩니다.</p>
         </div>
       </div>
-      <div class="breakfast-inline-tools">
-        <label class="breakfast-inline-date"><span>조식 날짜</span><input type="date" id="breakfastInlineDate" value="2026-09-01"></label>
-        <button class="btn small" type="button" id="fillBreakfastFromRooms">객실예약 다시 불러오기</button>
-        <button class="btn soft small" type="button" id="saveBreakfastInline">이 날짜 조식표 저장</button>
+      <div class="breakfast-live-actions">
+        <span class="live-badge"><i></i> LIVE</span>
+        <button class="btn small" type="button" id="reloadBreakfastLive">새로고침</button>
+        <a class="btn soft small live-open-link" href="https://memo1004.vercel.app/" target="_blank" rel="noopener noreferrer">새 창으로 열기 ↗</a>
       </div>
     </div>
-    <div class="breakfast-table-wrap">
-      <table id="breakfastInlineTable">
-        <colgroup>
-          <col style="width:42px"><col style="width:76px"><col style="width:72px"><col style="width:142px">
-          <col style="width:150px"><col style="width:90px"><col style="width:108px"><col style="width:84px">
-          <col style="width:72px"><col style="width:72px"><col style="width:210px"><col style="width:72px">
-          <col style="width:58px"><col style="width:78px">
-        </colgroup>
-        <thead><tr>
-          <th>순번</th><th>호실</th><th>자리</th><th>연박 / 룸터치 / 딜리</th><th>이름</th><th>인원</th><th>결제</th><th>시간</th>
-          <th class="menu-head">톳밥</th><th class="menu-head">죽</th><th class="menu-head">어린이용</th><th class="menu-head">스프</th><th>총</th><th>완성</th>
-        </tr></thead>
-        <tbody id="breakfastInlineRows"></tbody>
-        <tfoot><tr>
-          <td colspan="8" style="text-align:right;padding-right:12px">총계</td>
-          <td class="sumcell"><small>톳밥</small><br><b id="bfSumTot">0</b></td>
-          <td class="sumcell"><small>죽</small><br><b id="bfSumPorridge">0</b></td>
-          <td class="sumcell"><small>어린이용</small><br><b id="bfSumChild">0</b></td>
-          <td class="sumcell"><small>스프</small><br><b id="bfSumSoup">0</b></td>
-          <td class="grand" id="bfGrandTotal">0</td><td></td>
-        </tr></tfoot>
-      </table>
-    </div>
-    <div class="breakfast-inline-notes">
-      <div class="breakfast-note front"><label>&lt;프런트&gt;</label><textarea id="bfFrontNote" placeholder="프런트 전달사항"></textarea></div>
-      <div class="breakfast-note kitchen"><label>&lt;주방&gt;</label><textarea id="bfKitchenNote" placeholder="주방 전달사항"></textarea></div>
-    </div>
-    <div class="breakfast-inline-savebar">
-      <div><div class="breakfast-inline-state" id="breakfastInlineState">아직 수정하지 않음</div><div class="breakfast-inline-hint">체크아웃 당일 아침 조식도 포함되도록, 해당 날짜 아침에 실제 투숙 중인 객실을 기준으로 예약자명과 인원을 불러옵니다.</div></div>
-      <button class="btn soft" type="button" id="saveBreakfastInlineBottom">조식표 저장</button>
+    <div class="breakfast-live-frame-wrap">
+      <iframe
+        id="breakfastLiveFrame"
+        class="breakfast-live-frame"
+        src="https://memo1004.vercel.app/"
+        title="TOYU 조식 리딩연습"
+        loading="eager"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allow="clipboard-read; clipboard-write"
+      ></iframe>
+      <div class="breakfast-live-fallback">
+        화면이 보이지 않으면 사이트의 보안 설정 때문에 내부 표시가 막힌 경우입니다.
+        <a href="https://memo1004.vercel.app/" target="_blank" rel="noopener noreferrer">조식 리딩 사이트 직접 열기 ↗</a>
+      </div>
     </div>
   </section>
 </div>
@@ -647,7 +651,7 @@
     <div class="modal-body">
       <div class="workflow-help">
         <div class="workflow-help-title">딱 이 순서대로 하면 달력에 들어갑니다</div>
-        <div class="workflow-help-sub">사이트가 이미지를 직접 읽는 것은 아니에요. <b>① 사이트에서 프롬프트 복사 → ② 대화창에 img와 → ③ 받은 글을 삽입 → ④ JSON 변환 명령을 다시 터미널에 전송 → ⑤ 받은 JSON을 재명령해 저장</b> 순서.</div>
+        <div class="workflow-help-sub">사이트가 이미지를 직접 읽는 것은 아니에요. <b>① 사이트에서 프롬프트 복사 → ② 대화창에 이미지와 함께 전송 → ③ 받은 글을 사이트에 붙임 → ④ JSON 변환 명령을 다시 대화창에 전송 → ⑤ 받은 JSON을 사이트에 붙여 저장</b> 순서입니다.</div>
         <div class="workflow-road">
           <div class="workflow-node site"><b>1. 사이트</b><span>날짜 선택 후<br>영문 프롬프트 복사</span></div>
           <div class="workflow-node chat"><b>2. 대화창</b><span>예약시트 이미지 +<br>복사한 프롬프트 전송</span></div>
@@ -1666,42 +1670,25 @@ Rules:
 13. Use null for unknown/blank values, except guest_count which may remain a visible string.
 14. breakfast_included must be true ONLY when the transcription explicitly says INCLUDED, false ONLY when it explicitly says NOT INCLUDED, and null for BLANK/UNCLEAR/unknown. Never infer it.
 
-Required JSON schema:
+Required top-level JSON shape:
 {
   "sheet_date": "${date}",
-  "reservations": [
-    {
-      "room": "ROOM NUMBER FROM TRANSCRIPTION",
-      "room_type": null,
-      "guest_name": "VISIBLE NAME EXACTLY AS TRANSCRIBED",
-      "nationality": null,
-      "source": null,
-      "handler": null,
-      "booking_date": null,
-      "guest_count": null,
-      "check_in": null,
-      "check_out": null,
-      "phone": null,
-      "extra_guest": null,
-      "extra_bedding": null,
-      "parking": null,
-      "breakfast_included": null,
-      "breakfast_time": null,
-      "breakfast_menu": null,
-      "breakfast_count": null,
-      "note": null,
-      "reported_nights": null
-    }
-  ],
-  "blocks": [
-    {
-      "room": "ROOM NUMBER FROM TRANSCRIPTION",
-      "date": "${date}",
-      "label": null,
-      "note": null
-    }
-  ]
+  "reservations": [],
+  "blocks": []
 }
+
+For every REAL reservation found in the transcription, append one object to reservations using exactly these keys:
+room, room_type, guest_name, nationality, source, handler, booking_date, guest_count, check_in, check_out, phone, extra_guest, extra_bedding, parking, breakfast_included, breakfast_time, breakfast_menu, breakfast_count, note, reported_nights.
+
+For every REAL operational/block note found in the transcription, append one object to blocks using exactly these keys:
+room, date, label, note.
+
+CRITICAL PLACEHOLDER RULE:
+- Never output instructional placeholder text as a JSON value.
+- Never output values such as "ROOM NUMBER FROM TRANSCRIPTION", "VISIBLE NAME EXACTLY AS TRANSCRIBED", "YYYY-MM-DD", "BLANK", "UNCLEAR", or bracketed instruction text.
+- If no real reservation is present, return "reservations": [].
+- If no real operational/block note is present, return "blocks": [].
+- A reservation object may exist ONLY when its room number is explicitly present in the transcription and is one of the 13 valid rooms.
 
 TRANSCRIPTION TO CONVERT:
 ------------------------------
@@ -1720,6 +1707,29 @@ Final check before answering: JSON syntax must be valid; no duplicate copies of 
     let t=text.trim();t=t.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
     const a=t.indexOf('{'), b=t.lastIndexOf('}'); if(a>=0&&b>a)t=t.slice(a,b+1);return t;
   }
+  function isInstructionPlaceholder(v){
+    const x=String(v??'').trim().toUpperCase();
+    if(!x)return false;
+    return x.includes('FROM TRANSCRIPTION') || x.includes('VISIBLE NAME') || x==='YYYY-MM-DD' || x==='BLANK' || x==='UNCLEAR' || /^\[.*\]$/.test(x);
+  }
+  function sanitizeImportObject(obj){
+    if(!obj || typeof obj!=='object') return {obj, removed:0};
+    let removed=0;
+    const rs=Array.isArray(obj.reservations)?obj.reservations:[];
+    obj.reservations=rs.filter(r=>{
+      const bad=!r || isInstructionPlaceholder(r.room) || isInstructionPlaceholder(r.guest_name);
+      if(bad)removed++;
+      return !bad;
+    });
+    const bs=Array.isArray(obj.blocks)?obj.blocks:[];
+    obj.blocks=bs.filter(b=>{
+      const bad=!b || isInstructionPlaceholder(b.room);
+      if(bad)removed++;
+      return !bad;
+    });
+    return {obj,removed};
+  }
+
   function validateImport(obj){
     const errors=[];
     if(!obj||typeof obj!=='object')errors.push('JSON 객체가 아닙니다.');
@@ -1732,7 +1742,9 @@ Final check before answering: JSON syntax must be valid; no duplicate copies of 
   }
   function previewImport(){
     try{
-      const obj=JSON.parse(cleanJsonText($('#jsonInput').value));
+      let obj=JSON.parse(cleanJsonText($('#jsonInput').value));
+      const sanitized=sanitizeImportObject(obj);
+      obj=sanitized.obj;
       const selectedSheetDate=$('#sheetDate').value||selectedDate;
       const returnedSheetDate=obj.sheet_date||null;
       if(returnedSheetDate && returnedSheetDate!==selectedSheetDate){
@@ -1742,7 +1754,7 @@ Final check before answering: JSON syntax must be valid; no duplicate copies of 
       const errors=validateImport(obj);if(errors.length)throw new Error(errors.join('\n'));
       pendingImport=obj;
       const rs=obj.reservations||[], bs=obj.blocks||[];
-      $('#previewHead').textContent=`예약 ${rs.length}건 · 메모/블럭 ${bs.length}건 · 기준일 ${obj.sheet_date}` + (obj._returned_sheet_date?` · JSON의 잘못된 기준일 ${obj._returned_sheet_date} → ${obj.sheet_date}로 자동 수정`:``);
+      $('#previewHead').textContent=`예약 ${rs.length}건 · 메모/블럭 ${bs.length}건 · 기준일 ${obj.sheet_date}` + (sanitized.removed?` · 잘못 생성된 예시행 ${sanitized.removed}건 자동 제외`:``) + (obj._returned_sheet_date?` · JSON의 잘못된 기준일 ${obj._returned_sheet_date} → ${obj.sheet_date}로 자동 수정`:``);
       $('#previewList').innerHTML=rs.map(r=>`<div class="preview-item"><div class="p-room">${esc(r.room)}</div><div><b>${esc(r.guest_name||'예약자 미입력')}</b><div class="p-date">${esc(r.check_in)} → ${esc(r.check_out)} · ${esc(r.source||'채널 미입력')}</div></div><div>${esc(r.guest_count||'-')}명</div></div>`).join('')+bs.map(b=>`<div class="preview-item"><div class="p-room">${esc(b.room)}</div><div><b>${esc(b.label||'메모')}</b><div class="p-date">${esc(b.date||obj.sheet_date||'')}</div></div><div>BLOCK</div></div>`).join('');
       $('#preview').classList.add('show');$('#applyImport').disabled=false;updateWorkflowState();
     }catch(e){pendingImport=null;$('#applyImport').disabled=true;$('#preview').classList.remove('show');updateWorkflowState();alert('JSON을 확인해주세요.\n\n'+e.message)}
@@ -1819,17 +1831,8 @@ Final check before answering: JSON syntax must be valid; no duplicate copies of 
   $('#todayBtn').onclick=()=>{const d=new Date();current={year:d.getFullYear(),month:d.getMonth()};selectedDate=iso(d.getFullYear(),d.getMonth(),d.getDate());$('#quickDate').value=selectedDate;render()};
   $('#quickDate').addEventListener('change',e=>{if(!e.target.value)return;selectedDate=e.target.value;const d=toDate(selectedDate);current={year:d.getFullYear(),month:d.getMonth()};render()});
   $('#guestRosterBtn').onclick=()=>{renderGuestRoster();$('#guestRosterModal').classList.add('open')};
-  $('#breakfastBtn').onclick=()=>{renderBreakfastInline();$('#breakfastInline')?.scrollIntoView({behavior:'smooth',block:'start'})};
-
-  $('#breakfastInlineDate').addEventListener('change',e=>{const d=e.target.value;if(!d)return;selectedDate=d;const dt=toDate(d);current={year:dt.getFullYear(),month:dt.getMonth()};$('#quickDate').value=d;render()});
-  $('#saveBreakfastInline').onclick=saveBreakfastInline;
-  $('#saveBreakfastInlineBottom').onclick=saveBreakfastInline;
-  $('#fillBreakfastFromRooms').onclick=refreshBreakfastFromRooms;
-  $('#breakfastInlineRows').addEventListener('input',e=>{if(!e.target.closest('[data-bf-field]'))return;updateBreakfastInlineTotals();collectBreakfastInline(false);$('#breakfastInlineState').textContent=`${formatKoreanDate($('#breakfastInlineDate').value)} · 자동저장됨`;});
-  $('#breakfastInlineRows').addEventListener('change',e=>{if(!e.target.closest('[data-bf-field]'))return;collectBreakfastInline(false);});
-  $('#breakfastInlineRows').addEventListener('click',e=>{const btn=e.target.closest('[data-bf-complete]');const tr=e.target.closest('tr[data-bf-room]');if(tr){$$('#breakfastInlineRows tr').forEach(x=>x.classList.remove('focus-row'));tr.classList.add('focus-row')}if(!btn)return;btn.classList.toggle('done');btn.textContent=btn.classList.contains('done')?'완성 ✓':'완성';tr?.classList.toggle('is-complete',btn.classList.contains('done'));collectBreakfastInline(false);});
-  $('#bfFrontNote').addEventListener('input',()=>collectBreakfastInline(false));
-  $('#bfKitchenNote').addEventListener('input',()=>collectBreakfastInline(false));
+  $('#breakfastBtn').onclick=()=>{$('#breakfastInline')?.scrollIntoView({behavior:'smooth',block:'start'})};
+  $('#reloadBreakfastLive')?.addEventListener('click',()=>{const frame=$('#breakfastLiveFrame');if(frame){frame.src='about:blank';setTimeout(()=>{frame.src='https://memo1004.vercel.app/';},30);toast('조식 리딩 화면을 새로고침합니다.')}});
 
   $('#lunchBtn').onclick=()=>{$('#lunchListDate').value=selectedDate;resetLunchForm(selectedDate);renderLunchList();$('#lunchModal').classList.add('open')};
   $('#searchInput').addEventListener('input',e=>{searchTerm=e.target.value.trim().toLowerCase();renderCalendar()});
